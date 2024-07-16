@@ -2,6 +2,8 @@ import argparse
 import os
 import os.path as osp
 import json
+import sys
+sys.path.append('F:/merged_code/virtualhome/virtualhome_eval/')
 
 from virtualhome_eval.evaluation.goal_interpretation.scripts.generate_prompts import (
     generate_prompts as goal_input_preparation,
@@ -11,6 +13,9 @@ from virtualhome_eval.evaluation.transition_modeling.scripts.generate_prompts im
 )
 from virtualhome_eval.evaluation.action_sequence.scripts.generate_prompts import (
     generate_prompts as action_input_preparation,
+)
+from virtualhome_eval.evaluation.subgoal_decomposition.scripts.generate_prompts import (
+    generate_prompts as subgoal_input_preparation,
 )
 from virtualhome_eval.evaluation.goal_interpretation.scripts.evaluate_results import (
     evaluate_results as goal_output_evaluation,
@@ -27,13 +32,14 @@ def parse_args():
     parser.add_argument(
         "--mode",
         type=str,
-        default="evaluate_results",
+        default="generate_prompts",
         help="generate_prompts, evaluate_results",
     )
     parser.add_argument(
         "--eval_type",
         type=str,
-        default="action_sequence",
+        # default="action_sequence",
+        default="subgoal_decomposition",
         help="action_sequence, transition_model, goal_interpretation, subgoal_decomposition",
     )
     parser.add_argument(
@@ -71,6 +77,7 @@ def parse_args():
     return parser.parse_args()
 
 
+
 if __name__ == "__main__":
     args = parse_args()
     eval_type = args.eval_type
@@ -87,6 +94,8 @@ if __name__ == "__main__":
             tm_input_preparation(args)
         elif eval_type == "goal_interpretation":
             goal_input_preparation(args)
+        elif eval_type == "subgoal_decomposition":
+            subgoal_input_preparation(args)
     elif mode == "evaluate_results":
         if eval_type == "action_sequence":
             output_dir = osp.join(output_dir, "action_sequence")
@@ -119,4 +128,4 @@ if __name__ == "__main__":
                 json.dump(error_info, f, indent=4)
                 print(f'Error info saved to {osp.join(output_dir, "error_info.json")}')
     elif mode == "generate_prompts":
-        print(f"Prompts generated in {output_dir}")
+        print(f"Prompts generated in virtualhome_eval/evaluation/{eval_type}/prompts/helm_prompts.json")
