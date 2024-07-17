@@ -112,23 +112,23 @@ class SubgoalPlanHalfJson(SubgoalPlan):
 # ============== Unit Tests ==============
 # ========================================
 
-def test_subgoal_object():
-    llm_outputs_path = './virtualhome/simulation/evaluation/eval_subgoal_plan/llm_output/llama-3-8b-chat_outputs.json'
-    with open(llm_outputs_path, 'r') as f:
-        llm_outputs = json.load(f)
-    error_num = 0
-    # now iterate all
-    for llm_output in llm_outputs:
-        identifier = llm_output['identifier']
-        llm_output = llm_output['llm_output']
-        scene_id = int(identifier[6:7])
-        file_id = identifier[8:]
-        try:
-            subgoal_plan = SubgoalPlanHalfJson(scene_id, file_id, llm_output)
-        except Exception as e:
-            error_num += 1
-    print(f'Error num: {error_num}')
+# def test_subgoal_object():
+#     llm_outputs_path = './virtualhome/simulation/evaluation/eval_subgoal_plan/llm_output/llama-3-8b-chat_outputs.json'
+#     with open(llm_outputs_path, 'r') as f:
+#         llm_outputs = json.load(f)
+#     error_num = 0
+#     # now iterate all
+#     for llm_output in llm_outputs:
+#         identifier = llm_output['identifier']
+#         llm_output = llm_output['llm_output']
+#         scene_id = int(identifier[6:7])
+#         file_id = identifier[8:]
+#         try:
+#             subgoal_plan = SubgoalPlanHalfJson(scene_id, file_id, llm_output)
+#         except Exception as e:
+#             error_num += 1
+#     print(f'Error num: {error_num}')
 
 
-if __name__ == '__main__':
-    test_subgoal_object()
+# if __name__ == '__main__':
+#     test_subgoal_object()

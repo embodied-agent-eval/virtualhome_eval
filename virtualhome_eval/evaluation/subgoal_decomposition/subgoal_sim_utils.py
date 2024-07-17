@@ -114,3 +114,17 @@ def evaluate_task(vocab_path, scene_id, file_id, llm_output):
         report = ('NotParseable', str(e), None)
     finally:
         return report
+
+def get_scene_id_and_file_id(identifier):
+    scene_id = int(identifier[6:7])
+    file_id = identifier[8:]
+    return scene_id, file_id
+
+def get_llm_outputs_dict(llm_outputs_path):
+    with open(llm_outputs_path, 'r') as f:
+        llm_outputs = json.load(f)
+    return llm_outputs
+
+def get_llm_tasks_names(llm_outputs):
+    task_name_list = [item['identifier'] for item in llm_outputs]
+    return task_name_list

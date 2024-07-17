@@ -492,7 +492,7 @@ class SubgoalRuntimeChecker(SubgoalBaseChecker):
         return new_failed_action_seqs
     
     def get_vh_goal(self):
-        ltl_formula_accurate_base_root = './virtualhome/resources/task_state_LTL_formula_accurate.json'
+        ltl_formula_accurate_base_root = 'virtualhome_eval/resources/task_state_LTL_formula_accurate.json'
         with open(ltl_formula_accurate_base_root, 'r') as f:
             task_obj = json.load(f)
         scene_str = f'scene_{self.scene_id}'
@@ -610,7 +610,7 @@ def load_graph_state(state_file_path):
     return init_state, final_state
 
 def load_motion_planner(scene_id: int, file_id:str) -> MotionPlanner:
-    state_root_path = 'F:/Projects/Research/embodiedAI/AgentEval/virtualhome/dataset/programs_processed_precond_nograb_morepreconds/init_and_final_graphs/TrimmedTestScene1_graph/results_intentions_march-13-18'
+    state_root_path = f'virtualhome_eval/dataset/programs_processed_precond_nograb_morepreconds/init_and_final_graphs/TrimmedTestScene{scene_id}_graph/results_intentions_march-13-18'
     state_file_path = os.path.join(state_root_path, f'file{file_id}.json')
     init_state, final_state = load_graph_state(state_file_path)
     init_graph = EnvironmentGraph(init_state)
@@ -619,18 +619,18 @@ def load_motion_planner(scene_id: int, file_id:str) -> MotionPlanner:
 
 
 
-def get_example_subgoal_case():
-    llm_output_path = './virtualhome/simulation/evaluation/eval_subgoal_plan/llm_output/gpt-4o-2024-05-13_outputs.json'
-    with open(llm_output_path, 'r') as f:
-        llm_outputs = json.load(f)
-    identifier = llm_outputs[0]['identifier']
-    llm_output = llm_outputs[0]['llm_output']
-    scene_id = int(identifier[6:7])
-    file_id = identifier[8:]
-    return SubgoalPlanHalfJson(scene_id, file_id, llm_output)
+# def get_example_subgoal_case():
+#     llm_output_path = './virtualhome/simulation/evaluation/eval_subgoal_plan/llm_output/gpt-4o-2024-05-13_outputs.json'
+#     with open(llm_output_path, 'r') as f:
+#         llm_outputs = json.load(f)
+#     identifier = llm_outputs[0]['identifier']
+#     llm_output = llm_outputs[0]['llm_output']
+#     scene_id = int(identifier[6:7])
+#     file_id = identifier[8:]
+#     return SubgoalPlanHalfJson(scene_id, file_id, llm_output)
 
 def get_final_tl_goal(scene_id, file_id):
-    final_goal_file_path = 'F:/Projects/Research/embodiedAI/AgentEval/virtualhome/resources/task_state_LTL_formula_accurate.json'
+    final_goal_file_path = 'virtualhome_eval/resources/task_state_LTL_formula_accurate.json'
     scene_str = f'scene_{scene_id}'
     with open(final_goal_file_path, 'r') as f:
         final_goal_dict = json.load(f)
@@ -642,35 +642,35 @@ def get_final_tl_goal(scene_id, file_id):
     return None
 
 
-def test_checkers():
-    vocab_path = 'F:/Projects/Research/embodiedAI/AgentEval/virtualhome/resources/vocabulary.json'
-    subgoal_plan = get_example_subgoal_case()
-    scene_id = subgoal_plan.scene_id
-    file_id = subgoal_plan.file_id
-    planner = load_motion_planner(scene_id, file_id)
-    id_to_name_dict = planner.id_to_name
-    vocab = Vocabulary(vocab_path, id_to_name_dict)
-    syntactic_checker = SubgoalSyntacticChecker(subgoal_plan, vocab)
-    print(syntactic_checker.report())
-    if not syntactic_checker.run_result:
-        return
-    tl_expression = syntactic_checker.get_parsed_tl_expression()
-    semantic_checker = SubgoalSemanticChecker(subgoal_plan, vocab, tl_expression)
-    print(semantic_checker.report())
-    if not semantic_checker.run_result:
-        return
-    goal_tl_formula = get_final_tl_goal(scene_id, file_id)
-    if goal_tl_formula is None:
-        print('Final goal not found')
-        return
-    goal_tl_expression = parse_simple_tl(goal_tl_formula, vocab.get_tl_predicates(), vocab.get_subgoal_actions_in_list())
-    runtime_checker = SubgoalRuntimeChecker(subgoal_plan, vocab, tl_expression, planner, goal_tl_expression)
-    print(runtime_checker.report())
-    print(runtime_checker.run_result)
-    if not runtime_checker.run_result:
-        return
+# def test_checkers():
+#     vocab_path = 'virtualhome_eval/resources/vocabulary.json'
+#     subgoal_plan = get_example_subgoal_case()
+#     scene_id = subgoal_plan.scene_id
+#     file_id = subgoal_plan.file_id
+#     planner = load_motion_planner(scene_id, file_id)
+#     id_to_name_dict = planner.id_to_name
+#     vocab = Vocabulary(vocab_path, id_to_name_dict)
+#     syntactic_checker = SubgoalSyntacticChecker(subgoal_plan, vocab)
+#     print(syntactic_checker.report())
+#     if not syntactic_checker.run_result:
+#         return
+#     tl_expression = syntactic_checker.get_parsed_tl_expression()
+#     semantic_checker = SubgoalSemanticChecker(subgoal_plan, vocab, tl_expression)
+#     print(semantic_checker.report())
+#     if not semantic_checker.run_result:
+#         return
+#     goal_tl_formula = get_final_tl_goal(scene_id, file_id)
+#     if goal_tl_formula is None:
+#         print('Final goal not found')
+#         return
+#     goal_tl_expression = parse_simple_tl(goal_tl_formula, vocab.get_tl_predicates(), vocab.get_subgoal_actions_in_list())
+#     runtime_checker = SubgoalRuntimeChecker(subgoal_plan, vocab, tl_expression, planner, goal_tl_expression)
+#     print(runtime_checker.report())
+#     print(runtime_checker.run_result)
+#     if not runtime_checker.run_result:
+#         return
 
     
 
-if __name__ == '__main__':
-    test_checkers()
+# if __name__ == '__main__':
+#     test_checkers()
