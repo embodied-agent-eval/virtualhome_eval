@@ -437,10 +437,3 @@ def calculate_logic_score(input_str1, input_str2):
 input_str1 = "(forall (?close_obj - object) (when (exists (?c - object) (when (next_to ?c d) b)) e))"
 input_str2 = "(forall (?close_obj - object) (when (exists (?c - object) (when (next_to ?c d) b)) e))"
 
-
-                                             
-# input_str1 = '(and () ())'
-# input_str2 = '()'
-
-                                                                                                                                                                               
-print("Similarity Score and diff:", calculate_logic_score(input_str1, input_str2))

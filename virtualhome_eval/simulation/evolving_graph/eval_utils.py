@@ -1,7 +1,6 @@
 import os
 from virtualhome_eval.simulation.evolving_graph.environment import EnvironmentGraph
 import json
-import openai
 import time
 import ast
 import re
@@ -131,6 +130,7 @@ def get_gpt_output(
     json_object=True,
     system_prompt=None,
 ):
+    import openai
     if json_object:
         if isinstance(message, str) and not "json" in message.lower():
             message = "You are a helpful assistant designed to output JSON. " + message
