@@ -7,6 +7,9 @@ import copy
 import virtualhome_eval.simulation.evolving_graph.utils as utils
 from virtualhome_eval.simulation.evolving_graph.eval_utils import *
 
+import logging
+
+logger = logging.getLogger(__name__)
 
 def evaluate_results(args):
     llm_response_path = args.llm_response_path
@@ -38,7 +41,7 @@ def evaluate_results(args):
     task_dicts = task_dicts[scene_id]
 
     llm_response_path = osp.join(llm_response_path, 'goal_interpretation')
-    print(f'load llm response from {llm_response_path}')
+    logging.info(f'load llm response from {llm_response_path}')
     model_file = extract_model_names(llm_response_path)
 
     all_results = {}
@@ -72,7 +75,7 @@ def evaluate_results(args):
 
             # get symbolic goals
             task = id2task[file_id]
-            print(f"Task is {task}, file_id is {file_id}")
+            logging.info(f"Task is {task}, file_id is {file_id}")
             program_dict = task_dicts[task][file_id]
             goals = program_dict["vh_goal"]
             gold_action_goals = goals["actions"]
@@ -111,15 +114,15 @@ def evaluate_results(args):
                 output = json.loads(output)
             except Exception as e:
                 format_wrong_goals += 1
-                print(f"format wrong num is {format_wrong_goals}")
-                print(
+                logging.info(f"format wrong num is {format_wrong_goals}")
+                logging.info(
                     f"model {model_name}, task {task}, file_id {file_id} has format wrong output"
                 )
                 continue
 
-            print(f"Ground truth {gold_node_goals=}")
-            print(f"Ground truth {gold_edge_goals=}")
-            print(f"Ground truth {gold_action_goals=}")
+            logging.info(f"Ground truth {gold_node_goals=}")
+            logging.info(f"Ground truth {gold_edge_goals=}")
+            logging.info(f"Ground truth {gold_action_goals=}")
 
             # get the obj_to_id mapping
             motion_planner, _, _, task_name, task_description = construct_planner(
@@ -135,7 +138,7 @@ def evaluate_results(args):
             for tup in relevant_nodes_ids:
                 name_to_id[tup[0]] = tup[1]
 
-            print(f"predicted {output=}")
+            logging.info(f"predicted {output=}")
             pred_node_goals = output.get("node goals", [])
             pred_edge_goals = output.get("edge goals", [])
             pred_action_goals = output.get("action goals", [])
@@ -143,37 +146,37 @@ def evaluate_results(args):
             pred_edge_goals = remove_duplicate_dicts(pred_edge_goals)
             pred_action_goals = remove_duplicate_dicts(pred_action_goals)
 
-            print(f"{task_name=}")
-            print(f"{task_description=}")
-            print(f"{name_to_id=}")
+            logging.info(f"{task_name=}")
+            logging.info(f"{task_description=}")
+            logging.info(f"{name_to_id=}")
             # check node goals and calculate TP, FP, FN
             delta_TP_node_goals = 0
             delta_FP_node_goals = 0
             delta_FN_node_goals = 0
-            print("Predicted node goals:")
+            logging.info("Predicted node goals:")
             for node_goal in pred_node_goals:
                 if len(node_goal) == 0:
                     continue
                 if "name" not in node_goal or "state" not in node_goal:
                     format_wrong_goals += 1
                     total_node_goals += 1
-                    print(
+                    logging.info(
                         f"model {model_name}, task {task}, file_id {file_id} has format wrong output"
                     )
                     continue
                 if node_goal["name"] not in name_to_id:
                     hallucination_goals += 1
-                    print(
+                    logging.info(
                         f"model {model_name}, task {task}, file_id {file_id} has hallucination output"
                     )
-                    print(f"hallucinated output is {node_goal}")
+                    logging.info(f"hallucinated output is {node_goal}")
                     continue
                 indexed_node_goals = {
                     "id": name_to_id[node_goal["name"]],
                     "class_name": node_goal["name"],
                     "state": node_goal["state"],
                 }
-                print(indexed_node_goals)
+                logging.info(indexed_node_goals)
                 if indexed_node_goals in gold_node_goals:
                     delta_TP_node_goals += 1
                 else:
@@ -183,12 +186,12 @@ def evaluate_results(args):
             TP_node_goals += delta_TP_node_goals
             FP_node_goals += delta_FP_node_goals
             FN_node_goals += delta_FN_node_goals
-            print(
+            logging.info(
                 f"TP_node_goals: {delta_TP_node_goals}, FP_node_goals: {delta_FP_node_goals}, FN_node_goals: {delta_FN_node_goals}"
             )
 
             # check edge goals and calculate TP, FP, FN
-            print("Predicted edge goals:")
+            logging.info("Predicted edge goals:")
             delta_TP_edge_goals = 0
             delta_FP_edge_goals = 0
             delta_FN_edge_goals = 0
@@ -202,7 +205,7 @@ def evaluate_results(args):
                 ):
                     format_wrong_goals += 1
                     total_edge_goals += 1
-                    print(
+                    logging.info(
                         f"model {model_name}, task {task}, file_id {file_id} has format wrong output"
                     )
                     continue
@@ -211,17 +214,17 @@ def evaluate_results(args):
                     or edge_goal["to_name"] not in name_to_id
                 ):
                     hallucination_goals += 1
-                    print(
+                    logging.info(
                         f"model {model_name}, task {task}, file_id {file_id} has hallucination output"
                     )
-                    print(f"hallucinated output is {edge_goal}")
+                    logging.info(f"hallucinated output is {edge_goal}")
                     continue
                 indexed_edge_goals = {
                     "from_id": name_to_id[edge_goal["from_name"]],
                     "to_id": name_to_id[edge_goal["to_name"]],
                     "relation_type": edge_goal["relation"],
                 }
-                print(indexed_edge_goals)
+                logging.info(indexed_edge_goals)
                 if indexed_edge_goals in gold_edge_goals:
                     delta_TP_edge_goals += 1
                 else:
@@ -231,12 +234,12 @@ def evaluate_results(args):
             TP_edge_goals += delta_TP_edge_goals
             FP_edge_goals += delta_FP_edge_goals
             FN_edge_goals += delta_FN_edge_goals
-            print(
+            logging.info(
                 f"TP_edge_goals: {delta_TP_edge_goals}, FP_edge_goals: {delta_FP_edge_goals}, FN_edge_goals: {delta_FN_edge_goals}"
             )
 
             # check action goals and calculate TP, FP, FN
-            print("Predicted action goals:")
+            logging.info("Predicted action goals:")
             delta_TP_acion_goals = 0
             delta_FP_action_goals = 0
             delta_FN_action_goals = 0
@@ -247,12 +250,12 @@ def evaluate_results(args):
                 if "action" not in action_goal_dict:
                     format_wrong_goals += 1
                     total_action_goals += 1
-                    print(
+                    logging.info(
                         f"model {model_name}, task {task}, file_id {file_id} has format wrong output"
                     )
                     continue
                 action_goal = action_goal_dict["action"].upper()
-                print(action_goal)
+                logging.info(action_goal)
                 found_flag = False
                 for gd_action_goals in gold_action_goals_cp:
                     if "|" in gd_action_goals:
@@ -276,28 +279,28 @@ def evaluate_results(args):
             TP_action_goals += delta_TP_acion_goals
             FP_action_goals += delta_FP_action_goals
             FN_action_goals += delta_FN_action_goals
-            print(
+            logging.info(
                 f"TP_action_goals: {delta_TP_acion_goals}, FP_action_goals: {delta_FP_action_goals}, FN_action_goals: {delta_FN_action_goals}"
             )
 
         node_precision, node_recall, node_f1 = precision_recall_f1(
             TP_node_goals, FP_node_goals, FN_node_goals
         )
-        print(
+        logging.info(
             f"Node: TP: {TP_node_goals}, FP: {FP_node_goals}, FN: {FN_node_goals}, Precision: {node_precision}, Recall: {node_recall}, F1: {node_f1}"
         )
 
         edge_precision, edge_recall, edge_f1 = precision_recall_f1(
             TP_edge_goals, FP_edge_goals, FN_edge_goals
         )
-        print(
+        logging.info(
             f"Edge: TP: {TP_edge_goals}, FP: {FP_edge_goals}, FN: {FN_edge_goals}, Precision: {edge_precision}, Recall: {edge_recall}, F1: {edge_f1}"
         )
 
         action_precision, action_recall, action_f1 = precision_recall_f1(
             TP_action_goals, FP_action_goals, FN_action_goals
         )
-        print(
+        logging.info(
             f"Action: TP: {TP_action_goals}, FP: {FP_action_goals}, FN: {FN_action_goals}, Precision: {action_precision}, Recall: {action_recall}, F1: {action_f1}"
         )
 
@@ -305,25 +308,25 @@ def evaluate_results(args):
         all_FP = FP_node_goals + FP_edge_goals + FP_action_goals
         all_FN = FN_node_goals + FN_edge_goals + FN_action_goals
         all_precision, all_recall, all_f1 = precision_recall_f1(all_TP, all_FP, all_FN)
-        print(
+        logging.info(
             f"All: TP: {all_TP}, FP: {all_FP}, FN: {all_FN}, Precision: {all_precision}, Recall: {all_recall}, F1: {all_f1}"
         )
 
         format_wrong_rate = format_wrong_goals / (
             total_node_goals + total_edge_goals + total_action_goals
         )
-        print(
+        logging.info(
             f"Format wrong num is {format_wrong_goals}, Total goals num is {total_node_goals + total_edge_goals + total_action_goals}"
         )
-        print(f"Format wrong rate is {format_wrong_rate}")
+        logging.info(f"Format wrong rate is {format_wrong_rate}")
 
         hallucination_rate = hallucination_goals / (
             total_node_goals + total_edge_goals + total_action_goals
         )
-        print(
+        logging.info(
             f"Hallucination num is {hallucination_goals}, Total goals num is {total_node_goals + total_edge_goals + total_action_goals}"
         )
-        print(f"Hallucination rate is {hallucination_rate}")
+        logging.info(f"Hallucination rate is {hallucination_rate}")
 
         summary = {
             "node_precision": round(100 * node_precision, 4),
@@ -345,6 +348,6 @@ def evaluate_results(args):
             os.makedirs(save_path)
         with open(osp.join(save_path, "summary.json"), "w") as f:
             json.dump(summary, f, indent=4)
-            print(f'Evaluate results of {model_name} saved to {save_path}')
+            logging.info(f'Evaluate results of {model_name} saved to {save_path}')
 
     return all_results

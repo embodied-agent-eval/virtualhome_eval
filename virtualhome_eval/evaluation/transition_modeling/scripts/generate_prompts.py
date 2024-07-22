@@ -5,6 +5,8 @@ from virtualhome_eval.simulation.evolving_graph.eval_utils import *
 from virtualhome_eval.simulation.evolving_graph.logic_score import *
 import virtualhome_eval.evaluation.transition_modeling.prompts.one_shot as one_shot
 
+import logging
+logger = logging.getLogger(__name__)
 
 def generate_prompts(args):
     helm_prompt_list = []
@@ -37,7 +39,7 @@ def generate_prompts(args):
     for task_name, task_dicts in task_dict.items():
         if task_name in ["Wash dishes by hand", "Write an email", "Wash hands"]:
             continue
-        print(f"task name is {task_name}")
+        logging.info(f"task name is {task_name}")
         task_name = "_".join(task_name.split())
         task_problem_dir = os.path.join(pddl_problem_dir, task_name)
 

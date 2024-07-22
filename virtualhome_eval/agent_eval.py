@@ -1,8 +1,7 @@
 import os
 import os.path as osp
-import json
-import sys
-
+import logging
+from virtualhome_eval.log_config import setup_logging
 from virtualhome_eval.evaluation.goal_interpretation.scripts.generate_prompts import (
     generate_prompts as goal_input_preparation,
 )
@@ -28,6 +27,8 @@ from virtualhome_eval.evaluation.subgoal_decomposition.scripts.evaluate_results 
     evaluate_results as subgoal_output_evaluation,
 )
 
+log_file = setup_logging()
+logger = logging.getLogger(__name__)
 
 def agent_evaluation(
     mode="generate_prompts",

@@ -5,6 +5,8 @@ import virtualhome_eval.simulation.evolving_graph.utils as utils
 from virtualhome_eval.simulation.evolving_graph.eval_utils import *
 import virtualhome_eval.evaluation.action_sequence.prompts.one_shot as one_shot
 
+import logging
+logger = logging.getLogger(__name__)
 
 def generate_prompts(args):
     dataset = args.dataset
@@ -27,7 +29,7 @@ def generate_prompts(args):
     helm_prompt_list = []
 
     for task_name, task_dicts in task_dict.items():
-        print(f"CURRENT TASK IS {task_name}!")
+        logging.info(f"CURRENT TASK IS {task_name}!")
         for file_id, task_goal_dict in task_dicts.items():
             # get symbolic goals
             goals = task_goal_dict["vh_goal"]

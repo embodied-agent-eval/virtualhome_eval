@@ -6,9 +6,13 @@ import ast
 import re
 import copy
 from collections import OrderedDict
+import logging
 
 from virtualhome_eval.simulation.evolving_graph.motion_planner import MotionPlanner
 import virtualhome_eval.simulation.evolving_graph.utils as utils
+import logging
+
+logger = logging.getLogger(__name__)
 
 valid_actions = {
     "DRINK": ("DRINK", 1),
@@ -94,9 +98,9 @@ def parse_json(raw_llm_output):
         try:
             return json.loads(result)
         except:
-            print("Error parsing JSON-like content.")
+            logging.info("Error parsing JSON-like content.")
     else:
-        print("No valid JSON-like content found.")
+        logging.info("No valid JSON-like content found.")
     # format error
     return None
 
@@ -142,7 +146,7 @@ def get_gpt_output(
         try:
             chat = openai.ChatCompletion.create(model=model, messages=messages)
         except Exception as e:
-            print(f"{e}\nTry after 1 min")
+            logging.info(f"{e}\nTry after 1 min")
             time.sleep(61)
             chat = openai.ChatCompletion.create(model=model, messages=messages)
         reply = chat.choices[0].message.content
@@ -161,7 +165,7 @@ def get_gpt_output(
                 messages=messages, model=model, temperature=temperature, **kwargs
             )
         except Exception as e:
-            print(f"{e}\nTry after 1 min")
+            logging.info(f"{e}\nTry after 1 min")
             time.sleep(61)
             chat = openai.OpenAI().chat.completions.create(
                 messages=messages, model=model, temperature=temperature, **kwargs
@@ -173,7 +177,7 @@ def get_gpt_output(
 def special_print(s):
     lines = s.split("\\n")
     for line in lines:
-        print(line)
+        logging.info(line)
 
 
 def special_write(s, f):
@@ -217,7 +221,7 @@ def find_target_dict(data, target):
         try:
             dict_obj = ast.literal_eval(dict_string)
         except:
-            print(f"{dict_string=}")
+            logging.info(f"{dict_string=}")
         if dict_obj.get("name") == target:
             return dict_obj
     return None
@@ -285,7 +289,7 @@ def json_to_action(action_json, relevant_name_to_id):
             )
     return actions
     # except Exception as e:
-    #     print(f"Error in converting json to action: {action_json}")
+    #     logging.info(f"Error in converting json to action: {action_json}")
     #     # raise e
     #     return []
 
@@ -435,10 +439,10 @@ def scene_eval_on_diff(
             node_state = node_state_str
         relevant_id = name_to_id.get(node_state["name"], None)
         if relevant_id is None:
-            print(f'No candidate found for {node_state["name"]} DOUBLE CHECK GOALS!')
+            logging.info(f'No candidate found for {node_state["name"]} DOUBLE CHECK GOALS!')
             node_error_flag = True
         node_relevant_ids.append(relevant_id)
-    print(f"{node_relevant_ids=}")
+    logging.info(f"{node_relevant_ids=}")
     if len(selected_node_state) == 0:
         node_error_flag = True
     if not node_error_flag:
@@ -447,15 +451,15 @@ def scene_eval_on_diff(
             if node["id"] in node_relevant_ids:
                 gold_final_diff_relevant.append(node)
         if len(gold_final_diff_relevant) == 0:
-            print(f"No relevant nodes found in gold final diff! DOUBLE CHECK GOALS!")
+            logging.info(f"No relevant nodes found in gold final diff! DOUBLE CHECK GOALS!")
     if not node_error_flag and len(gold_final_diff_relevant) != 0:
         predict_final_diff_relevant = []
         for node in predict_final_diff["nodes"]:
             if node["id"] in node_relevant_ids:
                 predict_final_diff_relevant.append(node)
         node_tp = 0
-        print(f"{predict_final_diff_relevant=}")
-        print(f"{gold_final_diff_relevant=}")
+        logging.info(f"{predict_final_diff_relevant=}")
+        logging.info(f"{gold_final_diff_relevant=}")
         for node in predict_final_diff_relevant:
             if node in gold_final_diff_relevant:
                 node_tp += 1
@@ -487,13 +491,13 @@ def scene_eval_on_diff(
         from_id = name_to_id.get(from_name, None)
         to_id = name_to_id.get(to_name, None)
         if from_id is None or to_id is None:
-            print(
+            logging.info(
                 f"No candidate found for {from_name} or {to_name} DOUBLE CHECK GOALS!"
             )
             edge_error_flag = True
         edge_relevant_ids.append(from_id)
         edge_relevant_ids.append(to_id)
-    print(f"{edge_relevant_ids=}")
+    logging.info(f"{edge_relevant_ids=}")
     if len(selected_edge_state) == 0:
         edge_error_flag = True
     if not edge_error_flag:
@@ -505,7 +509,7 @@ def scene_eval_on_diff(
             ):
                 gold_final_diff_relevant.append(edge)
         if len(gold_final_diff_relevant) == 0:
-            print(f"No relevant edges found in gold final diff! DOUBLE CHECK GOALS!")
+            logging.info(f"No relevant edges found in gold final diff! DOUBLE CHECK GOALS!")
     if not edge_error_flag and len(gold_final_diff_relevant) != 0:
         predict_final_diff_relevant = []
         for edge in predict_final_diff["edges"]:
@@ -566,7 +570,7 @@ def scene_evaluate(
     name_to_id = {}
     for tup in relevant_node_ids:
         name_to_id[tup[0]] = tup[1]
-    print(f"{name_to_id=}")
+    logging.info(f"{name_to_id=}")
 
     final_scene_graph = EnvironmentGraph(final_state_dict)
     planner = MotionPlanner(
@@ -595,7 +599,7 @@ def scene_evaluate(
             node_state = node_state_str
         candidate_ids = get_object_id_goal(node_state["name"], id_2_name_dict)
         if len(candidate_ids) == 0:
-            print(f'No candidate found for {node_state["name"]}')
+            logging.info(f'No candidate found for {node_state["name"]}')
             node_match_num = 0
             continue
         for id in candidate_ids:
@@ -663,21 +667,21 @@ def scene_evaluate(
                 continue
             if from_name == goal_from_name and to_name == goal_to_name:
                 if edge_state_str not in next_selected_edge_state:
-                    print(f"Edge state {edge_state_str} is already matched!!!")
+                    logging.info(f"Edge state {edge_state_str} is already matched!!!")
                     continue
                 edge_match_num += 1
-                print(f"Matched edge state {edge_state_str} with {real_edge_state}")
+                logging.info(f"Matched edge state {edge_state_str} with {real_edge_state}")
                 next_selected_edge_state.remove(edge_state_str)
-                print(f"{next_selected_edge_state=}")
+                logging.info(f"{next_selected_edge_state=}")
 
     assert edge_match_num <= edge_match_denom, f"{edge_match_num=}, {edge_match_denom=}"
 
     if len(action_goals) > 0:
         action_str = " ".join(action_seq)
         action_match_num = check_order_with_or_score(action_goals, action_str)
-        print(f"{action_match_num=}")
-        print(f"{action_goals=}")
-        print(f"{action_str=}")
+        logging.info(f"{action_match_num=}")
+        logging.info(f"{action_goals=}")
+        logging.info(f"{action_str=}")
         assert (
             action_match_num <= action_match_denom
         ), f"{action_match_num=}, {action_match_denom=}"
@@ -737,12 +741,12 @@ def scene_evaluate_wID(
         id = gd_node_goal["id"]
         obj = get_object_based_on_id(id, final_state_dict)
         if obj is None:
-            print(f"GOAL FAIL! Not found: {gd_node_goal}")
+            logging.info(f"GOAL FAIL! Not found: {gd_node_goal}")
             continue
         if gd_node_goal["state"] in obj["states"]:
             node_match_num += 1
         else:
-            print(f"GOAL FAIL! Not matched: {gd_node_goal}")
+            logging.info(f"GOAL FAIL! Not matched: {gd_node_goal}")
             unsatisfied_node_goals.append(gd_node_goal)
 
     # print found goals and not found goals
@@ -754,7 +758,7 @@ def scene_evaluate_wID(
             edge_match_num += 1
             break
         else:
-            print(f"GOAL FAIL! Not found: {gd_edge_goal}")
+            logging.info(f"GOAL FAIL! Not found: {gd_edge_goal}")
             unsatisfied_edge_goals.append(gd_edge_goal)
 
     assert edge_match_num <= edge_total_num, f"{edge_match_num=}, {edge_total_num=}"
@@ -764,9 +768,9 @@ def scene_evaluate_wID(
         action_match_num, unsatisfied_action_goals = check_order_with_or_score(
             action_goals, action_str
         )
-        print(f"{action_match_num=}")
-        print(f"{action_goals=}")
-        print(f"{action_str=}")
+        logging.info(f"{action_match_num=}")
+        logging.info(f"{action_goals=}")
+        logging.info(f"{action_str=}")
         assert (
             action_match_num <= action_total_num
         ), f"{action_match_num=}, {action_total_num=}"
@@ -793,7 +797,7 @@ def scene_evaluate_wID(
 def validate_programs_based_on_goal_states(
     final_state_dict, selected_node_goals, selected_edge_goals, character_id
 ):
-    print("\n\n=================Now starts validation=================\n\n")
+    logging.info("\n\n=================Now starts validation=================\n\n")
     name_equivalence = utils.load_name_equivalence()
     properties_data = utils.load_properties_data()
     object_placing = utils.load_object_placing()
@@ -821,7 +825,7 @@ def validate_programs_based_on_goal_states(
             node_state = node_state_str
         candidate_ids = get_object_id_goal(node_state["name"], id_2_name_dict)
         if len(candidate_ids) == 0:
-            print(f'No candidate found for {node_state["name"]}')
+            logging.info(f'No candidate found for {node_state["name"]}')
             success = False
             break
         success = False
@@ -833,14 +837,14 @@ def validate_programs_based_on_goal_states(
                 success = True
                 break
         if not success:
-            print(
+            logging.info(
                 f"[Node Fail] state {node_state} not found in the final state in file."
             )
             break
 
     # we then check edge states
     if success:
-        print(f"[Node Success]: File passed the node state check.")
+        logging.info(f"[Node Success]: File passed the node state check.")
         success = False
         for real_edge_state in final_state_dict["edges"]:
             # below, we get the real edge state
@@ -924,10 +928,10 @@ def validate_programs_based_on_goal_states(
 
     # now we check whether edge states are satisfied
     for edge_str in selected_edge_state:
-        print(f"[Edge Fail]: edge {edge_str} not found in the final state in file.")
+        logging.info(f"[Edge Fail]: edge {edge_str} not found in the final state in file.")
     if success:
-        print(f"[Edge Success]: File passed the edge state check.")
-        # print(f"[Success]: File {file_id} passed all checks.")
+        logging.info(f"[Edge Success]: File passed the edge state check.")
+        # logging.info(f"[Success]: File {file_id} passed all checks.")
         # success_list.append(file_id)
         return 1
     else:
@@ -947,7 +951,7 @@ def find_node_and_edge_in_scene_exact(node_goals, edge_goals, planner):
     edge_goal_exact = []
     # selected_node_state, selected_edge_state, accurate_edge_state, actions = goal['selected_node_state'], goal['selected_edge_state'], goal['accurate_edge_state'], goal['actions']
 
-    # print('diff in node', diff_in_final['nodes'])
+    # logging.info('diff in node', diff_in_final['nodes'])
 
     for cur_node in diff_in_final["nodes"]:
         cur_id, cur_name, cur_states = (
@@ -955,7 +959,7 @@ def find_node_and_edge_in_scene_exact(node_goals, edge_goals, planner):
             cur_node["class_name"],
             cur_node["states"],
         )
-        # print(f'{cur_node=}')
+        # logging.info(f'{cur_node=}')
         for cur_state in cur_states:
             success = False
             for node_str in node_goals:
@@ -978,7 +982,7 @@ def find_node_and_edge_in_scene_exact(node_goals, edge_goals, planner):
                         node_state = eval(node_str)
                     except:
                         node_state = node_str
-                    # print(f'{node_state=}')
+                    # logging.info(f'{node_state=}')
                     ground_node_name = node_state["name"]
                     ground_node_state = node_state["state"]
                     if cur_name == ground_node_name and cur_state == ground_node_state:
@@ -993,7 +997,7 @@ def find_node_and_edge_in_scene_exact(node_goals, edge_goals, planner):
                 )  # this can also be {'id': cur_id, 'class_name': cur_name, 'state': cur_state}, recommended
                 # final_states.append({'id': cur_id, 'class_name': cur_name, 'state': cur_state})
 
-    # print('diff in edges', diff_in_final['edges'])
+    # logging.info('diff in edges', diff_in_final['edges'])
     for cur_edge in diff_in_final["edges"]:
         cur_from_id, cur_relation, cur_to_id = (
             cur_edge["from_id"],
@@ -1005,7 +1009,7 @@ def find_node_and_edge_in_scene_exact(node_goals, edge_goals, planner):
             id_2_name_dict[cur_to_id],
         )  # type: ignore
 
-        # print(f'{cur_from_name}, {cur_relation}, {cur_to_name}')
+        # logging.info(f'{cur_from_name}, {cur_relation}, {cur_to_name}')
 
         # for edge_str, _ in accurate_edge_state.items():
         #     edge_state = ast.literal_eval(edge_str)
@@ -1084,7 +1088,7 @@ def check_no_hallucination_in_action(action_dict):
     for predicate_name, params in action_dict.items():
         predicate_name = predicate_name.upper()
         if predicate_name not in valid_actions.keys():
-            print(f"  Action {predicate_name} not in valid actions")
+            logging.info(f"  Action {predicate_name} not in valid actions")
             return False
     return True
 
@@ -1101,7 +1105,7 @@ def check_action_grammar(action_dict):
     for predicate_name, params in action_dict.items():
         params.remove("") if "" in params else None
         if len(params) != valid_actions[predicate_name][1]:
-            print(
+            logging.info(
                 f"Action {predicate_name} has {params} arguments, but expected number is {valid_actions[predicate_name][1]}"
             )
             return (
@@ -1140,7 +1144,7 @@ def check_fg_satisfied_in_prev_states(
     acting_char_id,
 ):
     if error_code == 1:
-        print("Check whether it is wrong order")
+        logging.info("Check whether it is wrong order")
         found = False
         for history_env_states in history_env_states_list:
             if validate_programs_based_on_goal_states(
@@ -1178,7 +1182,7 @@ def get_initial_states_and_final_goals_wo_id(planner, goal, relevant_nodes):
     diff_in_init, diff_in_final = planner.filter_unique_subdicts(
         init_dict, planner.final_state_dict
     )
-    # print(f'{id_2_name_dict=}')
+    # logging.info(f'{id_2_name_dict=}')
 
     name2id = {}
     # first, we obtain the init states
@@ -1202,7 +1206,7 @@ def get_initial_states_and_final_goals_wo_id(planner, goal, relevant_nodes):
             if "PLUGGED_IN(dishwasher)" not in predicate:
                 initial_states.append("PLUGGED_OUT(dishwasher)")
 
-    # print(f'{relevant_nodes=}')
+    # logging.info(f'{relevant_nodes=}')
     relevant_node_set = set()
     for node_dict in relevant_nodes:
         obj_name = node_dict["obj_name"]
@@ -1211,17 +1215,17 @@ def get_initial_states_and_final_goals_wo_id(planner, goal, relevant_nodes):
         for property_name in property_list:
             property_name = property_name.lower()
             predicate = f"{property_name}({obj_name})"
-            # print(f'{predicate=}')
+            # logging.info(f'{predicate=}')
             initial_states.append(predicate)
 
-    print(f"{relevant_node_set=}")
+    logging.info(f"{relevant_node_set=}")
     relevant_edges = []
     for edge in init_dict["edges"]:
         from_id, relation, to_id = edge["from_id"], edge["relation_type"], edge["to_id"]
         from_name, to_name = id_2_name_dict[from_id], id_2_name_dict[to_id]
         if from_name in relevant_node_set and to_name in relevant_node_set:
             relevant_edges.append(edge)
-    print(f"{relevant_edges=}")
+    logging.info(f"{relevant_edges=}")
 
     relevant_edges += diff_in_init["edges"]
 
@@ -1245,7 +1249,7 @@ def get_initial_states_and_final_goals_wo_id(planner, goal, relevant_nodes):
                     obj_2 = f"{to_name}"
                     obj_3 = f"{cur_to_name}"
                     predicate = f"BETWEEN({obj_1}, {obj_2}, {obj_3})"
-                    # print(predicate)
+                    # logging.info(predicate)
                     initial_states.append(predicate)
                     unpaired_between_list.remove((cur_from_id, cur_to_id))
                 elif cur_to_id == to_id:
@@ -1257,7 +1261,7 @@ def get_initial_states_and_final_goals_wo_id(planner, goal, relevant_nodes):
                     obj_2 = f"{from_name}"
                     obj_3 = f"{cur_from_name}"
                     predicate = f"BETWEEN({obj_1}, {obj_2}, {obj_3})"
-                    # print(predicate)
+                    # logging.info(predicate)
                     initial_states.append(predicate)
                     unpaired_between_list.remove((cur_from_id, cur_to_id))
                 else:
@@ -1284,20 +1288,20 @@ def get_initial_states_and_final_goals_wo_id(planner, goal, relevant_nodes):
                     relation = "NEXT_TO"
                 else:
                     relation = "OBJ_NEXT_TO"
-            print(f"init: {from_name} {relation} {to_name}")
+            logging.info(f"init: {from_name} {relation} {to_name}")
             name2id[to_name] = to_id
             name2id[from_name] = from_id
             obj_1 = f"{from_name}"
             obj_2 = f"{to_name}"
             predicate_name = state_transform_dictionary[relation]
             predicate = f"{predicate_name}({obj_1}, {obj_2})"
-            # print(predicate)
+            # logging.info(predicate)
             initial_states.append(predicate)
 
     initial_states = list(set(initial_states))
     # then, we obtain the final state with wildcards being changed with realistic objects
     final_states = []
-    # print("==we then print out all final goal states==")
+    # logging.info("==we then print out all final goal states==")
     selected_node_state, selected_edge_state, accurate_edge_state, actions = (
         goal["selected_node_state"],
         goal["selected_edge_state"],
@@ -1333,10 +1337,10 @@ def get_initial_states_and_final_goals_wo_id(planner, goal, relevant_nodes):
                 real_obj_name = f"{cur_name}"
                 predicate_name = state_transform_dictionary[cur_state]
                 predicate = f"{predicate_name}({real_obj_name})"
-                # print(predicate)
+                # logging.info(predicate)
                 final_states.append(predicate)
 
-    print(f"goal node; {final_states}")
+    logging.info(f"goal node; {final_states}")
     ## we then deal with edge cases
     predicates = set()
     unpaired_between_list = []
@@ -1416,7 +1420,7 @@ def get_initial_states_and_final_goals_wo_id(planner, goal, relevant_nodes):
                             cur_relation = "NEXT_TO"
                         else:
                             cur_relation = "OBJ_NEXT_TO"
-                    print(f"goals: {cur_from_name} {cur_relation} {cur_to_name}")
+                    logging.info(f"goals: {cur_from_name} {cur_relation} {cur_to_name}")
                     name2id[cur_to_name] = cur_to_id
                     name2id[cur_from_name] = cur_from_id
                     obj_1 = f"{cur_from_name}"
@@ -1526,7 +1530,7 @@ def get_initial_states_and_final_goals_wo_id(planner, goal, relevant_nodes):
                             cur_relation = "NEXT_TO"
                         else:
                             cur_relation = "OBJ_NEXT_TO"
-                    print(f"goals: {cur_from_name} {cur_relation} {cur_to_name}")
+                    logging.info(f"goals: {cur_from_name} {cur_relation} {cur_to_name}")
                     name2id[cur_from_name] = cur_from_id
                     name2id[cur_to_name] = cur_to_id
                     obj_1 = f"{cur_from_name}"
@@ -1536,17 +1540,17 @@ def get_initial_states_and_final_goals_wo_id(planner, goal, relevant_nodes):
                     predicates.add(predicate)
     ### output the predicates in edges
     for p in predicates:
-        # print(p)
+        # logging.info(p)
         final_states.append(p)
 
     ## we then deal with actions
     actions_states = []
-    # print("==we then print out all final goal actions==")
+    # logging.info("==we then print out all final goal actions==")
     for action in actions:
         action_candidates = action.split("|")
         action_candidates = [f"{a.upper().replace(' ', '')}" for a in action_candidates]
         final_action_str = " or ".join(action_candidates)
-        # print(final_action_str)
+        # logging.info(final_action_str)
         actions_states.append(final_action_str)
     return initial_states, final_states, actions_states, name2id
 
@@ -1803,7 +1807,7 @@ def calculate_precision_recall_f1(d):
 
 def print_precision_recall_f1(d):
     for k in d.keys():
-        print(f"{k} precision: {d[k][3]:.2f}, recall: {d[k][4]:.2f}, f1: {d[k][5]:.2f}")
+        logging.info(f"{k} precision: {d[k][3]:.2f}, recall: {d[k][4]:.2f}, f1: {d[k][5]:.2f}")
 
 
 def calculate_success_rate(d):
@@ -1830,14 +1834,14 @@ def calculate_success_rate_by_category(d):
 
 def print_success_rate(d):
     for k in d.keys():
-        print(f"{k} success rate: {d[k][2]:.4f}")
+        logging.info(f"{k} success rate: {d[k][2]:.4f}")
 
 
 def print_success_rate_by_category(d):
     for cat in d.keys():
-        print(f"{cat} success rate:")
+        logging.info(f"{cat} success rate:")
         for k in d[cat].keys():
-            print(
+            logging.info(
                 f"  {k} success rate: {d[cat][k][2]:.4f}, success: {d[cat][k][0]}, total: {d[cat][k][1]}"
             )
 

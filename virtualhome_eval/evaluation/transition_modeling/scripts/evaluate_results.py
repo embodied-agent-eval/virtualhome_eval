@@ -8,6 +8,8 @@ from virtualhome_eval.simulation.evolving_graph.eval_utils import *
 from virtualhome_eval.simulation.evolving_graph.pddlgym_planners.fd import FD
 from virtualhome_eval.simulation.evolving_graph.logic_score import *
 
+import logging
+logger = logging.getLogger(__name__)
 
 def evaluate_results(args):
     dataset = args.dataset
@@ -68,7 +70,7 @@ def evaluate_results(args):
         os.makedirs(output_dir)
     
     llm_response_path = osp.join(llm_response_path, "transition_modeling")
-    print(f"load llm response from {llm_response_path}")
+    logging.info(f"load llm response from {llm_response_path}")
     model_file = extract_model_names(llm_response_path)
 
     all_results = {}
@@ -135,18 +137,18 @@ def evaluate_results(args):
         hallucination_num = 0
         total_predict_action_num = 0
 
-        print("start evaluation")
+        logging.info("start evaluation")
 
         for output_dict in llm_response:
             file_id = output_dict["identifier"]
             if file_id not in success_file_id:
-                print(f"{file_id} not in success file id!")
+                logging.info(f"{file_id} not in success file id!")
                 continue
 
             total_num += 1
 
             task_name = id2task[file_id]
-            print(f"task name is {task_name}")
+            logging.info(f"task name is {task_name}")
 
             task_name = "_".join(task_name.split())
             if dataset == "virtualhome":
@@ -156,7 +158,7 @@ def evaluate_results(args):
             problem_path = os.path.join(task_problem_dir, f"{file_id}.pddl")
 
             category_name_list = id2category[file_id]
-            print(f"category names are {category_name_list}")
+            logging.info(f"category names are {category_name_list}")
 
             predicted_action = output_dict["llm_output"]
             # if llm output starts with ```json
@@ -170,17 +172,17 @@ def evaluate_results(args):
                 predicted_action = predicted_action["output"]
             except Exception as e:
                 pass
-            # print(predicted_action, flush=True)
+            # logging.info(predicted_action, flush=True)
 
             try:
                 predicted_action = extract_action_details(content=predicted_action)
             except Exception as e:
                 format_wrong_num += 1
-                print(f"Error in extracting action details: {e}")
-                print(f"format wrong num is {format_wrong_num}")
+                logging.info(f"Error in extracting action details: {e}")
+                logging.info(f"format wrong num is {format_wrong_num}")
                 continue
 
-            print("GPT predicted action body:", flush=True)
+            logging.info("GPT predicted action body:", flush=True)
             if predicted_action is None or predicted_action == "":
                 continue
 
@@ -216,10 +218,10 @@ def evaluate_results(args):
                 gold_str += f'  :preconditions {gold_action["action_preconditions"]}\n'
                 gold_str += f'  :effects {gold_action["action_effects"]}\n'
 
-                print("Gold action:")
-                special_print(gold_str)
-                print("GPT predicted action")
-                special_print(pred_str)
+                logging.info("Gold action:")
+                special_logging.info(gold_str)
+                logging.info("GPT predicted action")
+                special_logging.info(pred_str)
 
                 # logical score
                 gold_action = gold_action_dict[action_name]
@@ -250,7 +252,7 @@ def evaluate_results(args):
                     precond_predicate_type_res_dict[pred2category[pred]][0] += 1
                     precond_action_type_dict[action_name][0] += 1
                     precond_predicate_score_dict[pred][0] += 1
-                print(f"{unmatched_pred_precond=}")
+                logging.info(f"{unmatched_pred_precond=}")
                 for pred in unmatched_pred_precond:
                     if pred == "()":
                         continue
@@ -318,7 +320,7 @@ def evaluate_results(args):
             for action_name in predicted_action.keys():
                 assert predicted_action_copy == predicted_action
                 if action_name not in gold_actions_name:
-                    print(f"{action_name} not in gold! Hallucination!")
+                    logging.info(f"{action_name} not in gold! Hallucination!")
                     continue
                 single_variate_action = {}
                 gold_action_dict_copy = copy.deepcopy(gold_action_dict)
@@ -329,7 +331,7 @@ def evaluate_results(args):
                 single_variate_action[action_name] = copy.deepcopy(
                     predicted_action_copy[action_name]
                 )
-                # print(f"{single_variate_action=}")
+                # logging.info(f"{single_variate_action=}")
                 domain_file_path = complete_pddl_domain(
                     single_variate_action,
                     gold_action_dict,
@@ -345,9 +347,9 @@ def evaluate_results(args):
                     for category_name in category_name_list:
                         task_variate_control_by_type[category_name][action_name][0] += 1
                     action_variate_control[action_name][0] += 1
-                    print(f"Action test: task {file_id}'s {action_name} succeeded")
+                    logging.info(f"Action test: task {file_id}'s {action_name} succeeded")
                 except Exception as e:
-                    print(f"Action test: task {file_id}'s {action_name} failed")
+                    logging.info(f"Action test: task {file_id}'s {action_name} failed")
 
 
             # all action trial
@@ -364,9 +366,9 @@ def evaluate_results(args):
                 )
                 for category_name in category_name_list:
                     success_by_task_type_dict[category_name][0] += 1
-                print(f"Holistic test: task {file_id} succeeded")
+                logging.info(f"Holistic test: task {file_id} succeeded")
             except Exception as e:
-                print(f"Holistic test: task {file_id} failed")
+                logging.info(f"Holistic test: task {file_id} failed")
             
 
         # full is the sum of precond and effect
@@ -434,24 +436,24 @@ def evaluate_results(args):
         # full predicate score per predicate
         full_predicate_score_dict = calculate_precision_recall_f1(full_predicate_score_dict)
 
-        print(f"Format wrong num is {format_wrong_num}!!!")
+        logging.info(f"Format wrong num is {format_wrong_num}!!!")
         # print out precision recall f1
-        print("Precondition predicate type res dict:")
+        logging.info("Precondition predicate type res dict:")
         print_precision_recall_f1(precond_predicate_type_res_dict)
-        print("Effect predicate type res dict:")
+        logging.info("Effect predicate type res dict:")
         print_precision_recall_f1(effect_predicate_type_res_dict)
 
-        print("Precondition action type dict:")
+        logging.info("Precondition action type dict:")
         print_precision_recall_f1(precond_action_type_dict)
-        print("Effect action type dict:")
+        logging.info("Effect action type dict:")
         print_precision_recall_f1(effect_action_type_dict)
-        print("Full action type dict:")
+        logging.info("Full action type dict:")
         print_precision_recall_f1(full_action_type_dict)
-        print("Precondition predicate score dict:")
+        logging.info("Precondition predicate score dict:")
         print_precision_recall_f1(precond_predicate_score_dict)
-        print("Effect predicate score dict:")
+        logging.info("Effect predicate score dict:")
         print_precision_recall_f1(effect_predicate_score_dict)
-        print("Full predicate score dict:")
+        logging.info("Full predicate score dict:")
         print_precision_recall_f1(full_predicate_score_dict)
 
         # post-process sensitivity analysis
@@ -465,29 +467,29 @@ def evaluate_results(args):
             task_variate_control_effect_by_type
         )
 
-        print("Task variate control by type:")
+        logging.info("Task variate control by type:")
         print_success_rate_by_category(task_variate_control_by_type)
-        print("Task variate control precond by type:")
+        logging.info("Task variate control precond by type:")
         print_success_rate_by_category(task_variate_control_precond_by_type)
-        print("Task variate control effect by type:")
+        logging.info("Task variate control effect by type:")
         print_success_rate_by_category(task_variate_control_effect_by_type)
-        print("Action variate control:")
-        print(action_variate_control)
+        logging.info("Action variate control:")
+        logging.info(action_variate_control)
 
         # post-process success rate by planner on task type
-        print("\n")
-        print(f"{total_num=}")
-        print(f"{format_wrong_num=}, rate={100.*format_wrong_num/total_num:.2f}")
-        print(
+        logging.info("\n")
+        logging.info(f"{total_num=}")
+        logging.info(f"{format_wrong_num=}, rate={100.*format_wrong_num/total_num:.2f}")
+        logging.info(
             f"{hallucination_num=}, rate={100.*hallucination_num/total_predict_action_num:.2f}"
         )
         success_by_task_type_dict = calculate_success_rate(success_by_task_type_dict)
-        print("MODEL NAME!!! ", model_name)
-        print("\n")
-        print("Success by task type dict:")
+        logging.info("MODEL NAME!!! ", model_name)
+        logging.info("\n")
+        logging.info("Success by task type dict:")
         print_success_rate(success_by_task_type_dict)
-        print("\n")
-        print("Full predicate type res dict:")
+        logging.info("\n")
+        logging.info("Full predicate type res dict:")
         print_precision_recall_f1(full_predicate_type_res_dict)
 
         summary = {
@@ -558,6 +560,6 @@ def evaluate_results(args):
             os.makedirs(save_path)
         with open(osp.join(save_path, "summary.json"), "w") as f:
             json.dump(summary, f, indent=4)
-            print(f"Evaluate results of {model_name} saved to {save_path}")
+            logging.info(f"Evaluate results of {model_name} saved to {save_path}")
 
     return all_results

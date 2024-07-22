@@ -6,6 +6,9 @@ import virtualhome_eval.simulation.evolving_graph.utils as utils
 from virtualhome_eval.simulation.evolving_graph.eval_utils import *
 import virtualhome_eval.evaluation.goal_interpretation.prompts.one_shot as one_shot
 
+import logging
+logger = logging.getLogger(__name__)
+
 
 def generate_prompts(args):
     resource_root = osp.join(args.resource_dir, "virtualhome")
@@ -40,7 +43,7 @@ def generate_prompts(args):
     helm_prompt_list = []
 
     for task_name, task_dicts in task_dict.items():
-        print(f"CURRENT TASK IS {task_name}!")
+        logging.info(f"CURRENT TASK IS {task_name}!")
         for script_id, task_goal_dict in task_dicts.items():
             # get task name and description
             motion_planner, _, _, task_name, task_description = construct_planner(
