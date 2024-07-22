@@ -27,9 +27,6 @@ from virtualhome_eval.evaluation.subgoal_decomposition.scripts.evaluate_results 
     evaluate_results as subgoal_output_evaluation,
 )
 
-log_file = setup_logging()
-logger = logging.getLogger(__name__)
-
 def agent_evaluation(
     mode="generate_prompts",
     eval_type="goal_interpretation",
@@ -77,23 +74,39 @@ def agent_evaluation(
 
     if mode == "generate_prompts":
         if eval_type == "action_sequence":
-            action_input_preparation(args)
+            log_file = setup_logging(function_name="action_sequence_prompts")
+            logger = logging.getLogger(__name__)
+            prompt_path = action_input_preparation(args)
         elif eval_type == "transition_model":
-            tm_input_preparation(args)
+            log_file = setup_logging(function_name="transition_model_prompts")
+            logger = logging.getLogger(__name__)
+            prompt_path = tm_input_preparation(args)
         elif eval_type == "goal_interpretation":
-            goal_input_preparation(args)
+            log_file = setup_logging(function_name="goal_interpretation_prompts")
+            logger = logging.getLogger(__name__)
+            prompt_path = goal_input_preparation(args)
         elif eval_type == "subgoal_decomposition":
-            subgoal_input_preparation(args)
-        print(f"Prompts generated and saved to {output_dir}")
+            log_file = setup_logging(function_name="subgoal_decomposition_prompts")
+            logger = logging.getLogger(__name__)
+            prompt_path = subgoal_input_preparation(args)
+        print(f"Prompts generated and saved to {prompt_path}")
         return None
     elif mode == "evaluate_results":
         if eval_type == "action_sequence":
+            log_file = setup_logging(function_name="action_sequence_eval")
+            logger = logging.getLogger(__name__)
             all_results = action_output_evaluation(args)
         elif eval_type == "transition_model":
+            log_file = setup_logging(function_name="transition_model_eval")
+            logger = logging.getLogger(__name__)
             all_results = tm_output_evaluation(args)
         elif eval_type == "goal_interpretation":
+            log_file = setup_logging(function_name="goal_interpretation_eval")
+            logger = logging.getLogger(__name__)
             all_results = goal_output_evaluation(args)
         elif eval_type == "subgoal_decomposition":
+            log_file = setup_logging(function_name="subgoal_decomposition_eval")
+            logger = logging.getLogger(__name__)
             all_results, _ = subgoal_output_evaluation(args)
         print(f"All results saved to {output_dir}")
         return all_results

@@ -219,9 +219,9 @@ def evaluate_results(args):
                 gold_str += f'  :effects {gold_action["action_effects"]}\n'
 
                 logger.info("Gold action:")
-                special_logger.info(gold_str)
+                logger.info(gold_str)
                 logger.info("GPT predicted action")
-                special_logger.info(pred_str)
+                logger.info(pred_str)
 
                 # logical score
                 gold_action = gold_action_dict[action_name]

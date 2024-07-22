@@ -66,4 +66,5 @@ def generate_prompts(args):
 
     # save helm prompt
     json.dump(helm_prompt_list, open(helm_prompt_path, "w"), indent=4)
+    return helm_prompt_path
 
