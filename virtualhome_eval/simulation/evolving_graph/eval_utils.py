@@ -1852,3 +1852,13 @@ def precision_recall_f1(TP, FP, FN):
         else 0.0
     )
     return precision, recall, f1
+
+def extract_model_names(llm_response_dir):
+    model_names = []
+    files = os.listdir(llm_response_dir)
+    pattern = re.compile(r"^(.*?)_outputs\.json$")
+    for file in files:
+        match = pattern.match(file)
+        if match:
+            model_names.append(match.group(1))
+    return model_names
