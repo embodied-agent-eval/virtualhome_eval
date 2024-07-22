@@ -172,7 +172,7 @@ def evaluate_results(args):
                 predicted_action = predicted_action["output"]
             except Exception as e:
                 pass
-            # logger.info(predicted_action, flush=True)
+            # logger.info(predicted_action)
 
             try:
                 predicted_action = extract_action_details(content=predicted_action)
@@ -182,7 +182,7 @@ def evaluate_results(args):
                 logger.info(f"format wrong num is {format_wrong_num}")
                 continue
 
-            logger.info("GPT predicted action body:", flush=True)
+            logger.info("GPT predicted action body:")
             if predicted_action is None or predicted_action == "":
                 continue
 

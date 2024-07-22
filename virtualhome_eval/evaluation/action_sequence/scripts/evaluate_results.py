@@ -187,8 +187,7 @@ def evaluate_results(args):
                     hallucination_error = False
                 else:
                     logger.info(
-                        f"Task {task_name}, file {file_id} has hallucination error",
-                        flush=True,
+                        f"Task {task_name}, file {file_id} has hallucination error"
                     )
                     all_hallucination += 1
                     hallucination_error = True
@@ -204,8 +203,7 @@ def evaluate_results(args):
                     parameter_error = False
                 else:
                     logger.info(
-                        f"Task {task_name}, file {file_id} has arguments number error",
-                        flush=True,
+                        f"Task {task_name}, file {file_id} has arguments number error"
                     )
                     all_parameter_wrong += 1
                     parameter_error = True
@@ -259,7 +257,7 @@ def evaluate_results(args):
                                 logger.info(f"{history_actions_cp=}")
                                 break
                         else:
-                            logger.info(f"Current action {action} executable.", flush=True)
+                            logger.info(f"Current action {action} executable.")
                             history_actions.append(action)
                             new_env_state = copy.deepcopy(
                                 motion_planner.env_state.to_dict()
@@ -268,7 +266,7 @@ def evaluate_results(args):
 
                     if executable:
                         all_executable_plan += 1
-                        logger.info("Executable!", flush=True)
+                        logger.info("Executable!")
                         error_info[file_id] = {
                             "executable": executable,
                             "actions": actions,
@@ -313,7 +311,7 @@ def evaluate_results(args):
 
                     if all_pred_success:
                         all_correct_plan += 1
-                        logger.info("EVERYTHING SUCCEED!", flush=True)
+                        logger.info("EVERYTHING SUCCEED!")
 
             else:
                 if format_error:
