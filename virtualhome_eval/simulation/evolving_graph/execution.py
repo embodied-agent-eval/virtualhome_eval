@@ -9,6 +9,9 @@ from virtualhome_eval.simulation.evolving_graph.scripts import (
     Script,
 )
 
+import logging
+logger = logging.getLogger(__name__)
+
 
 # ExecutionInfo
 ###############################################################################
@@ -140,12 +143,12 @@ class WalkExecutor(ActionExecutor):
         info.set_current_line(current_line)
         current_obj = current_line.object()
 
-        # print("in walk execution, char_index = {}".format(char_index))
+        # logger.info("in walk execution, char_index = {}".format(char_index))
 
         # select objects based on current_obj
         for node in state.select_nodes(current_obj):
             node_room = _get_room_node(state, node)
-            # print(state, node)
+            # logger.info(state, node)
             if self.check_walk(state, node, info, char_index) and node_room is not None:
                 changes = [
                     DeleteEdges(
@@ -248,15 +251,15 @@ class WalkExecutor(ActionExecutor):
                         changes, node, current_obj, in_place=in_place
                     )
             else:
-                print("Check walk failed: {}".format(current_obj))
-                print(info.get_error_string())
+                logger.info("Check walk failed: {}".format(current_obj))
+                logger.info(info.get_error_string())
                 if node_room is None:
-                    print("Node room is None: {}".format(node_room))
+                    logger.info("Node room is None: {}".format(node_room))
 
     def check_walk(
         self, state: EnvironmentState, node: GraphNode, info: ExecutionInfo, char_index
     ):
-        # print("in check_walk, char_index = {}".format(char_index))
+        # logger.info("in check_walk, char_index = {}".format(char_index))
 
         char_node = _get_character_node(state, char_index)
         if State.SITTING in char_node.states or State.LYING in char_node.states:
@@ -717,7 +720,7 @@ class OpenExecutor(ActionExecutor):
             info.assign_error_type("unseen")
             info.object_found_error()
         if not self.check_openable(state, node, info, char_index):
-            print(f"Openable check failed: {script[0].__str__()}")
+            logger.info(f"Openable check failed: {script[0].__str__()}")
         elif self.check_openable(state, node, info, char_index):
             new_node = node.copy()
             new_node.states.discard(State.OPEN if self.close else State.CLOSED)
@@ -2319,8 +2322,6 @@ def _get_character_node(state: EnvironmentState, char_index: int):
     char_node = state.get_char_node(char_index)
     if isinstance(char_node, Generator):
         initial_char_node = next(char_node, None)
-        print(GraphNode)
-        print(initial_char_node.__class__)
         assert isinstance(initial_char_node, GraphNode)
         char_id = initial_char_node.id
         return state.get_node(char_id)
@@ -2333,7 +2334,7 @@ def _get_room_node(state: EnvironmentState, node: Node):
     if node.category == "Rooms":
         return node
     inside_nodes = state.get_nodes_from(node, Relation.INSIDE)
-    # print(node)
+    # logger.info(node)
     if len(inside_nodes) > 1:
         for n in state.get_nodes_from(node, Relation.INSIDE):
             if n.category == "Rooms":
@@ -2651,7 +2652,7 @@ class ScriptExecutor(object):
 
     def execute_one_step(self, script: Script, state: EnvironmentState, in_place=False):
         prev_state = state
-        # print("in execute_one_step, char_index = {}".format(self.char_index))
+        # logger.info("in execute_one_step, char_index = {}".format(self.char_index))
         state = next(
             self.call_action_method(
                 script, state, self.info, self.char_index, in_place=in_place
