@@ -39,7 +39,7 @@ def generate_prompts(args):
     for task_name, task_dicts in task_dict.items():
         if task_name in ["Wash dishes by hand", "Write an email", "Wash hands"]:
             continue
-        logging.info(f"task name is {task_name}")
+        logger.info(f"task name is {task_name}")
         task_name = "_".join(task_name.split())
         task_problem_dir = os.path.join(pddl_problem_dir, task_name)
 

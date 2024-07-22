@@ -29,7 +29,7 @@ def generate_prompts(args):
     helm_prompt_list = []
 
     for task_name, task_dicts in task_dict.items():
-        logging.info(f"CURRENT TASK IS {task_name}!")
+        logger.info(f"CURRENT TASK IS {task_name}!")
         for file_id, task_goal_dict in task_dicts.items():
             # get symbolic goals
             goals = task_goal_dict["vh_goal"]

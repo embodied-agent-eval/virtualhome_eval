@@ -43,7 +43,7 @@ def generate_prompts(args):
     helm_prompt_list = []
 
     for task_name, task_dicts in task_dict.items():
-        logging.info(f"CURRENT TASK IS {task_name}!")
+        logger.info(f"CURRENT TASK IS {task_name}!")
         for script_id, task_goal_dict in task_dicts.items():
             # get task name and description
             motion_planner, _, _, task_name, task_description = construct_planner(

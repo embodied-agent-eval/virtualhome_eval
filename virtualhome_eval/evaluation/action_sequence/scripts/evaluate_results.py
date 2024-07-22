@@ -59,12 +59,12 @@ def evaluate_results(args):
         5: "UNKNOWN_ERROR",
     }
     llm_response_path = osp.join(llm_response_path, "action_sequence")
-    logging.info(f"load llm response from {llm_response_path}")
+    logger.info(f"load llm response from {llm_response_path}")
     model_file = extract_model_names(llm_response_path)
     all_results = {}
     
     for model_name in model_file:
-        logging.info(f'Model name is {model_name}')
+        logger.info(f'Model name is {model_name}')
         llm_response_json = os.path.join(
             llm_response_path, f"{model_name}_outputs.json"
         )
@@ -94,7 +94,7 @@ def evaluate_results(args):
 
             # get symbolic goals
             task = id2task[file_id]
-            logging.info(f"Task is {task}, file_id is {file_id}")
+            logger.info(f"Task is {task}, file_id is {file_id}")
             program_num += 1
 
             program_dict = task_dicts[task][file_id]
@@ -144,7 +144,7 @@ def evaluate_results(args):
 
             if not all_success:
                 program_num -= 1
-                logging.info(f"Program {file_id} did not pass gold test")
+                logger.info(f"Program {file_id} did not pass gold test")
                 continue
 
             all_node_goals += len(gold_node_goals)
@@ -169,14 +169,14 @@ def evaluate_results(args):
             try:
                 actions = json.loads(actions)
             except Exception as e:
-                logging.info(f"Task {task_name}, file {file_id} prediction has format error")
+                logger.info(f"Task {task_name}, file {file_id} prediction has format error")
                 all_parsing_wrong += 1
                 actions = None
                 format_error = True
 
             if actions is None or len(actions) == 0:
                 all_parsing_wrong += 1
-                logging.info(f"Task {task_name}, file {file_id} prediction has no prediction")
+                logger.info(f"Task {task_name}, file {file_id} prediction has no prediction")
                 format_error = True
 
             # hallucination check
@@ -186,7 +186,7 @@ def evaluate_results(args):
                 ) and check_no_hallucination_in_arg(actions, relevant_name_to_id):
                     hallucination_error = False
                 else:
-                    logging.info(
+                    logger.info(
                         f"Task {task_name}, file {file_id} has hallucination error",
                         flush=True,
                     )
@@ -195,7 +195,7 @@ def evaluate_results(args):
 
             # parameters number check
             if not format_error and not hallucination_error:
-                logging.info(f"{actions=}")
+                logger.info(f"{actions=}")
                 pass_check, err = check_action_grammar(actions)
                 if pass_check:
                     actions = json_to_action(
@@ -203,7 +203,7 @@ def evaluate_results(args):
                     )
                     parameter_error = False
                 else:
-                    logging.info(
+                    logger.info(
                         f"Task {task_name}, file {file_id} has arguments number error",
                         flush=True,
                     )
@@ -211,7 +211,7 @@ def evaluate_results(args):
                     parameter_error = True
 
             if not format_error and not hallucination_error and not parameter_error:
-                logging.info(f"{actions=}")
+                logger.info(f"{actions=}")
                 if actions == gd_actions:
                     all_executable_plan += 1
                 else:
@@ -226,14 +226,14 @@ def evaluate_results(args):
                         exe_flag = False
                         executable = False
                     for action in actions:
-                        logging.info(f"Current {action=}")
+                        logger.info(f"Current {action=}")
                         history_env_states_cp = copy.deepcopy(history_env_states)
                         exe_flag, my_info = motion_planner.my_execute_primitive_action_eval(
                             action
                         )
                         if not exe_flag:
-                            logging.info(f"Current action {action} not executable.")
-                            logging.info(f"{my_info=}")
+                            logger.info(f"Current action {action} not executable.")
+                            logger.info(f"{my_info=}")
                             error_action = action
                             formal_info_checker = TemporalOrderChecker(
                                 my_info, history_env_states_cp
@@ -245,21 +245,21 @@ def evaluate_results(args):
                                 failed_error_code in error_code_to_number
                             ), f"Unknown error code {failed_error_code}"
                             error_code_to_number[failed_error_code] += 1
-                            logging.info(
+                            logger.info(
                                 f"Encounter error: {error_code_to_type[failed_error_code]}"
                             )
                             if failed_error_code != ADDITIONAL_ERRROR_CODE:
                                 if failed_error_code == 0:
-                                    logging.info(
+                                    logger.info(
                                         f"Current action {action} has wrong order error on task {file_id}."
                                     )
                                 executable = False
                                 history_actions_cp = copy.deepcopy(history_actions)
-                                logging.info(f"{failed_error_code=}")
-                                logging.info(f"{history_actions_cp=}")
+                                logger.info(f"{failed_error_code=}")
+                                logger.info(f"{history_actions_cp=}")
                                 break
                         else:
-                            logging.info(f"Current action {action} executable.", flush=True)
+                            logger.info(f"Current action {action} executable.", flush=True)
                             history_actions.append(action)
                             new_env_state = copy.deepcopy(
                                 motion_planner.env_state.to_dict()
@@ -268,7 +268,7 @@ def evaluate_results(args):
 
                     if executable:
                         all_executable_plan += 1
-                        logging.info("Executable!", flush=True)
+                        logger.info("Executable!", flush=True)
                         error_info[file_id] = {
                             "executable": executable,
                             "actions": actions,
@@ -299,13 +299,13 @@ def evaluate_results(args):
                         action_seq=history_actions,
                         action_goals=gold_action_goals,
                     )
-                    logging.info(
+                    logger.info(
                         f"Predicted: {node_match_num=}, {edge_match_num=}, {action_match_num=}"
                     )
-                    logging.info(
+                    logger.info(
                         f"Gold: {len(gold_node_goals)=}, {len(gold_edge_goals)=}, {len(gold_action_goals)=}"
                     )
-                    logging.info(f"Goals all satisfied: {all_pred_success=}")
+                    logger.info(f"Goals all satisfied: {all_pred_success=}")
                     all_matched_node += node_match_num
                     all_matched_edge += edge_match_num
                     all_matched_action += action_match_num
@@ -313,7 +313,7 @@ def evaluate_results(args):
 
                     if all_pred_success:
                         all_correct_plan += 1
-                        logging.info("EVERYTHING SUCCEED!", flush=True)
+                        logger.info("EVERYTHING SUCCEED!", flush=True)
 
             else:
                 if format_error:
@@ -341,20 +341,20 @@ def evaluate_results(args):
                     raise ValueError("Unknown error type")
 
         # calculate metrics, keep two decimal digits with percentage
-        logging.info(f"Program number: {program_num}")
-        logging.info(
+        logger.info(f"Program number: {program_num}")
+        logger.info(
             f"Parsing wrong: {all_parsing_wrong}, rate = {100.0 * all_parsing_wrong/program_num:.2f}%"
         )
-        logging.info(
+        logger.info(
             f"Hallucination: {all_hallucination}, rate = {100.0 * all_hallucination/program_num:.2f}%"
         )
-        logging.info(
+        logger.info(
             f"Parameter wrong: {all_parameter_wrong}, rate = {100.0 * all_parameter_wrong/program_num:.2f}%"
         )
-        logging.info(
+        logger.info(
             f"Executable plan: {all_executable_plan}, rate = {100.0 * all_executable_plan/program_num:.2f}%"
         )
-        logging.info(
+        logger.info(
             f"Correct plan: {all_correct_plan}, rate = {100.0 * all_correct_plan/program_num:.2f}%"
         )
 
@@ -362,32 +362,32 @@ def evaluate_results(args):
         all_missing_step_num = error_code_to_number[1]
         all_affordance_num = error_code_to_number[2]
         all_additional_step_num = error_code_to_number[4]
-        logging.info("For not executable plans:")
-        logging.info(
+        logger.info("For not executable plans:")
+        logger.info(
             f"Wrong order: {all_wrong_order_num}, rate = {100.0 * all_wrong_order_num/program_num:.2f}%"
         )
-        logging.info(
+        logger.info(
             f"Missing step: {all_missing_step_num}, rate = {100.0 * all_missing_step_num/program_num:.2f}%"
         )
-        logging.info(
+        logger.info(
             f"Affordance error: {all_affordance_num}, rate = {100.0 * all_affordance_num/program_num:.2f}%"
         )
-        logging.info(
+        logger.info(
             f"Additional step: {all_additional_step_num}, rate = {100.0 * all_additional_step_num/program_num:.2f}%"
         )
 
         # keep three decimal digits
-        logging.info("For scene metrics:")
-        logging.info(
+        logger.info("For scene metrics:")
+        logger.info(
             f"Matched node: {all_matched_node}, rate = {100.0 *all_matched_node/all_node_goals:.2f}"
         )
-        logging.info(
+        logger.info(
             f"Matched edge: {all_matched_edge}, rate = {100.0 *all_matched_edge/all_edge_goals:.2f}"
         )
-        logging.info(
+        logger.info(
             f"Matched action: {all_matched_action}, rate = {100.0 *all_matched_action/all_action_goals:.2f}"
         )
-        logging.info(
+        logger.info(
             f"Matched all: {all_matched_all}, rate = {100.0 *all_matched_all/all_goals:.2f}"
         )
 
@@ -426,10 +426,10 @@ def evaluate_results(args):
             os.makedirs(save_path)
         with open(osp.join(save_path, "summary.json"), "w") as f:
             json.dump(summary, f, indent=4)
-            logging.info(f"Evaluate results of {model_name} saved to {save_path}")
+            logger.info(f"Evaluate results of {model_name} saved to {save_path}")
         with open(osp.join(save_path, "error_info.json"), "w") as f:
             json.dump(summary, f, indent=4)
-            logging.info(f"Error info of {model_name} saved to {save_path}")
+            logger.info(f"Error info of {model_name} saved to {save_path}")
 
     return all_results
 
