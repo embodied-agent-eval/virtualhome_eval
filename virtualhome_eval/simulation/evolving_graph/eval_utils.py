@@ -379,7 +379,6 @@ def construct_planner(
     script_id="11_1",
     dataset_root="dataset/programs_processed_precond_nograb_morepreconds",
 ):
-    print(f"Scene {scenegraph_id} and script {script_id}")
     acting_char_id = None
     if scenegraph_id == 1:
         acting_char_id = 65

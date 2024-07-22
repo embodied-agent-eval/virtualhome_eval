@@ -1,4 +1,3 @@
-import argparse
 import os
 import os.path as osp
 import json
@@ -30,61 +29,51 @@ from virtualhome_eval.evaluation.subgoal_decomposition.scripts.evaluate_results 
 )
 
 
-def parse_args():
-    parser = argparse.ArgumentParser(description="Agent evaluation")
-    parser.add_argument(
-        "--mode",
-        type=str,
-        default="generate_prompts",
-        help="generate_prompts, evaluate_results",
-    )
-    parser.add_argument(
-        "--eval_type",
-        type=str,
-        # default="action_sequence",
-        default="subgoal_decomposition",
-        help="action_sequence, transition_model, goal_interpretation, subgoal_decomposition",
-    )
-    parser.add_argument(
-        "--resource_dir",
-        type=str,
-        default="virtualhome_eval/resources/",
-        help="resources directory",
-    )
-    parser.add_argument(
-        "--llm_response_path",
-        type=str,
-        default="virtualhome_eval/llm_response/",
-        help="your llm response path",
-    )
-    parser.add_argument(
-        "--dataset_dir",
-        type=str,
-        default="virtualhome_eval/dataset/",
-        help="dataset directory, necessary only when generating prompts",
-    )
-    parser.add_argument(
-        "--dataset", type=str, default="virtualhome", help="virtualhome, behavior"
-    )
-    parser.add_argument(
-        "--output_dir",
-        type=str,
-        default="virtualhome_eval/output/",
-        help="output directory",
-    )
-    # virtualhoome
-    parser.add_argument("--scene_id", type=int, default=1, help="virtualhome scene id")
-    return parser.parse_args()
+def agent_evaluation(
+    mode="generate_prompts",
+    eval_type="goal_interpretation",
+    resource_dir="virtualhome_eval/resources/",
+    llm_response_path="virtualhome_eval/llm_response/",
+    dataset_dir="virtualhome_eval/dataset/",
+    dataset="virtualhome",
+    output_dir="virtualhome_eval/output/",
+    scene_id=1,
+):
+    """
+    Perform agent evaluation based on the specified parameters.
 
+    Args:
+        mode (str): The evaluation mode ('generate_prompts' or 'evaluate_results').
+        eval_type (str): The type of evaluation ('action_sequence', 'transition_model', 'goal_interpretation', or 'subgoal_decomposition').
+        resource_dir (str): Path to the resources directory.
+        llm_response_path (str): Path to the LLM response directory.
+        dataset_dir (str): Path to the dataset directory.
+        dataset (str): The dataset to use ('virtualhome' or 'behavior').
+        output_dir (str): Path to the output directory.
+        scene_id (int): The VirtualHome scene ID.
 
-if __name__ == "__main__":
-    args = parse_args()
-    eval_type = args.eval_type
-    mode = args.mode
+    Returns:
+        dict or None: Evaluation results if mode is 'evaluate_results', None otherwise.
+    """
 
-    output_dir = args.output_dir
+    # Create output directory if it doesn't exist
     if not osp.exists(output_dir):
         os.makedirs(output_dir)
+
+    # Create a class to mimic the structure of args
+    class Args:
+        pass
+
+    args = Args()
+    args.mode = mode
+    args.eval_type = eval_type
+    args.resource_dir = resource_dir
+    args.llm_response_path = llm_response_path
+    args.dataset_dir = dataset_dir
+    args.dataset = dataset
+    args.output_dir = output_dir
+    args.scene_id = scene_id
+
     if mode == "generate_prompts":
         if eval_type == "action_sequence":
             action_input_preparation(args)
@@ -94,6 +83,8 @@ if __name__ == "__main__":
             goal_input_preparation(args)
         elif eval_type == "subgoal_decomposition":
             subgoal_input_preparation(args)
+        print(f"Prompts generated and saved to {output_dir}")
+        return None
     elif mode == "evaluate_results":
         if eval_type == "action_sequence":
             all_results = action_output_evaluation(args)
@@ -102,12 +93,9 @@ if __name__ == "__main__":
         elif eval_type == "goal_interpretation":
             all_results = goal_output_evaluation(args)
         elif eval_type == "subgoal_decomposition":
-            summary, _ = subgoal_output_evaluation(args)
+            all_results, _ = subgoal_output_evaluation(args)
+        print(f"All results saved to {output_dir}")
+        return all_results
     else:
         raise ValueError(f"Invalid mode: {mode}")
 
-    # save summary results and intermediate results
-    if mode == "evaluate_results":
-        print(f"All results saved to {output_dir}")
-    elif mode == "generate_prompts":
-        print(f"Prompts generated and saved to {output_dir}")
