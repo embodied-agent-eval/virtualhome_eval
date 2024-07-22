@@ -2,6 +2,8 @@ import os
 import ast
 import json
 import copy
+import logging
+logger = logging.getLogger(__name__)
 from virtualhome_eval.simulation.evolving_graph.eval_utils import *
 from virtualhome_eval.simulation.evolving_graph.motion_planner import MotionPlanner
 

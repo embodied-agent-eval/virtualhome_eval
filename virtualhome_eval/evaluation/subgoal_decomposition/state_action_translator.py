@@ -1,6 +1,9 @@
 import copy
 import os
 import json
+import logging
+logger = logging.getLogger(__name__)
+
 from virtualhome_eval.simulation.evolving_graph.motion_planner import MotionPlanner
 from virtualhome_eval.tl_formula.simple_tl import SimpleTLExpression, Proposition, Action, SimpleTLPrimitive, SimpleTLNot
 from virtualhome_eval.evaluation.subgoal_decomposition.subgoal_eval_utils import Vocabulary

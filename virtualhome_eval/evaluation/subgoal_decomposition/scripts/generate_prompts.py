@@ -32,7 +32,7 @@ def generate_prompts(args):
     helm_prompt_list = json.load(open(helm_prompt_path, "r")) if osp.exists(helm_prompt_path) else None
     helm_prompt_list = [] if helm_prompt_list is None else helm_prompt_list
     for task_name, task_detail in task_dict.items():
-        print(f"CURRENT TASK IS {task_name}!")
+        logger.info(f"CURRENT TASK IS {task_name}!")
         for file_id, task_goal_dict in task_detail.items():
             if prompt_generated(helm_prompt_list, scene_id, file_id):
                 continue

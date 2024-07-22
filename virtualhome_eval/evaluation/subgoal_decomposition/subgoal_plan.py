@@ -2,6 +2,8 @@ import os
 import json
 import random
 import re
+import logging
+logger = logging.getLogger(__name__)
 from typing import List, Dict, Any, Optional, Union
 
 class SubgoalPlan:

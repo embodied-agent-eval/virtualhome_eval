@@ -1,5 +1,7 @@
 import os
 import json
+import logging
+logger = logging.getLogger(__name__)
 
 from typing import Dict, List, Any, Union
 from virtualhome_eval.evaluation.subgoal_decomposition.checkers import get_final_tl_goal, load_motion_planner, SubgoalSyntacticChecker, SubgoalSemanticChecker, SubgoalRuntimeChecker

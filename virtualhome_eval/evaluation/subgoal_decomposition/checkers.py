@@ -2,6 +2,8 @@ import copy
 import json
 import os
 import sys
+import logging
+logger = logging.getLogger(__name__)
 
 from collections import deque
 from typing import List, Dict, Any, Tuple, Union
@@ -521,7 +523,7 @@ class SubgoalRuntimeChecker(SubgoalBaseChecker):
         for action in action_seq:
             rst, info =self.planner.my_execute_primitive_action_eval(action)
             if not rst:
-                print(f'Action {action} failed')
+                logger.info(f'Action {action} failed')
         final_state_dict = self.planner.env_state.to_dict()
         return my_scene_evaluate(final_state_dict, node_goals, edge_goals, char_id,  action_seq, action_goals)
 

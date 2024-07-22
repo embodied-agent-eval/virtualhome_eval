@@ -256,4 +256,4 @@ def generate_system_setup(prompt_file_path):
         json.dump(prompts, f, indent=4)
 
 if __name__ == '__main__':
-    print(system_prompt+target_task_prompt)
+    logger.info(system_prompt+target_task_prompt)

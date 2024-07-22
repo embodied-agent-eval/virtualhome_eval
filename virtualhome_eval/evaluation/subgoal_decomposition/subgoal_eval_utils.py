@@ -3,6 +3,8 @@ import json
 import ast
 import re
 import copy
+import logging
+logger = logging.getLogger(__name__)
 from collections import OrderedDict
 
 import virtualhome_eval.simulation.evolving_graph.utils as utils
@@ -368,3 +370,14 @@ def goal_eval_stats(eval_stat_path):
         "overall_goal": round(overall_goal_success_rate, 4)
     }
     return goal_stats
+
+
+def extract_model_names(llm_response_dir):
+    model_names = []
+    files = os.listdir(llm_response_dir)
+    pattern = re.compile(r"^(.*?)_outputs\.json$")
+    for file in files:
+        match = pattern.match(file)
+        if match:
+            model_names.append(match.group(1))
+    return model_names

@@ -1,9 +1,11 @@
 import os
 import json
 import fire
+import logging
+logger = logging.getLogger(__name__)
 from multiprocessing import Process, Manager, Queue
 from virtualhome_eval.evaluation.subgoal_decomposition.subgoal_sim_utils import evaluate_task, EvalStatistics, get_scene_id_and_file_id, get_llm_outputs_dict, get_final_tl_goal, get_llm_tasks_names
-from virtualhome_eval.evaluation.subgoal_decomposition.subgoal_eval_utils import traj_eval_stats, goal_eval_stats
+from virtualhome_eval.evaluation.subgoal_decomposition.subgoal_eval_utils import traj_eval_stats, goal_eval_stats, extract_model_names
 
 def simulate_llm_response(scene_id, file_id, lock, llm_response, eval_stat_path, task_names):
     task_name = f'scene_{scene_id}_{file_id}'
@@ -61,7 +63,7 @@ def simulate_one_llm(llm_response_path, worker_num: int=5, result_dir: str='./re
     else:
         for scene_id, file_id, llm_response in real_task_list:
             simulate_llm_response(scene_id, file_id, lock, llm_response, eval_stat_path, task_names)
-    print(f'Results saved to {eval_stat_path}')
+    logger.info(f'Results saved to {eval_stat_path}')
     summary = {
         "trajectory_evaluation": {},
         "goal_evaluation": {}
@@ -75,17 +77,19 @@ def simulate_one_llm(llm_response_path, worker_num: int=5, result_dir: str='./re
 
 def evaluate_results(args):
     dataset = args.dataset
-    model_name = args.model_name
     if args.llm_response_path == "":
-        llm_response_path = f"virtualhome_eval/llm_response/subgoal_decomposition/{model_name}_outputs.json"
+        llm_response_path = f"virtualhome_eval/llm_response/subgoal_decomposition/"
     else:
         llm_response_path = args.llm_response_path
+    model_names = extract_model_names(llm_response_path)
+    all_results = {}
+    for model_name in model_names:
+        output_path = os.path.join(args.output_dir, "subgoal_decomposition", model_name)
+        
+        resource_root = os.path.join(args.resource_dir, dataset)
+        data_dir = os.path.join(args.dataset_dir, "programs_processed_precond_nograb_morepreconds")
 
-    output_path = os.path.join(args.output_dir, "subgoal_decomposition", model_name)
-    
-    resource_root = os.path.join(args.resource_dir, dataset)
-    data_dir = os.path.join(args.dataset_dir, "programs_processed_precond_nograb_morepreconds")
-
-    os.makedirs(output_path, exist_ok=True)
-    summary = simulate_one_llm(llm_response_path, result_dir=output_path)
-    return summary, None
+        os.makedirs(output_path, exist_ok=True)
+        summary = simulate_one_llm(llm_response_path, result_dir=output_path)
+        all_results[model_name] = summary
+    return all_results, None
