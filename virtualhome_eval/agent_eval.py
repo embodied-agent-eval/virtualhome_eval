@@ -26,6 +26,9 @@ from virtualhome_eval.evaluation.transition_modeling.scripts.evaluate_results im
 from virtualhome_eval.evaluation.action_sequence.scripts.evaluate_results import (
     evaluate_results as action_output_evaluation,
 )
+from virtualhome_eval.evaluation.subgoal_decomposition.scripts.evaluate_results import (
+    evaluate_results as subgoal_output_evaluation,
+)
 
 def parse_args():
     parser = argparse.ArgumentParser(description="Agent evaluation")
@@ -112,6 +115,11 @@ if __name__ == "__main__":
             if not osp.exists(output_dir):
                 os.makedirs(output_dir)
             summary, error_info = goal_output_evaluation(args)
+        elif eval_type == "subgoal_decomposition":
+            output_dir = osp.join(output_dir, "subgoal_decomposition")
+            if not osp.exists(output_dir):
+                os.makedirs(output_dir)
+            summary, error_info = subgoal_output_evaluation(args)
     else:
         raise ValueError(f"Invalid mode: {mode}")
 
