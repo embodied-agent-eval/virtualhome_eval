@@ -9,8 +9,10 @@ pip install virtualhome_eval
 ## Usage
 To run `virtualhome_eval`, use the following commands with arguments
 ```
-python -m virtualhome_eval.agent_eval --mode [generate_prompts, evaluate_results] --eval_type [goal_interpretation, action_sequence, transition_modeling] --llm_response_path [YOUR LLM OUTPUT DIR]  > [YOUR LOG PATH] 2>&1
+from virtualhome_eval.agent_eval import agent_evaluation
+agent_evaluation(mode=[generate_prompts, evaluate_results], eval_type=[goal_interpretation, action_sequence, transition_modeling], llm_response_path=[YOUR LLM OUTPUT DIR])
 ```
+
 ### Parameters
 - `mode`: Specifies either generate prompts or evaluate results. Options are:
   - `generate_prompts` 
@@ -19,8 +21,8 @@ python -m virtualhome_eval.agent_eval --mode [generate_prompts, evaluate_results
   - `goal_interpretation`
   - `action_sequence`
   - `subgoal_decomposition`
-  - `transition_modeling`
-- `llm_response_path`: The path of LLM output to be evaluated. It is `""` by default, using the existing outputs at directory `virtualhome_eval/llm_response/`. 
+  - `transition_model`
+- `llm_response_path`: The path of LLM output directory to be evaluated. It is `""` by default, using the existing outputs at directory `virtualhome_eval/llm_response/`. The function will evaluate all LLM outputs under the directory.
 - `dataset`: The dataset type. Options:
   - `virtualhome`
   - `behavior`
@@ -29,25 +31,25 @@ python -m virtualhome_eval.agent_eval --mode [generate_prompts, evaluate_results
 ### Example usage
 1. To generate prompts for `goal_interpretation`:
 ```
-python -m virtualhome_eval.agent_eval --mode generate_prompts --eval_type goal_interpretation > goal_eval_vh_prompt.log 2>&1
+agent_evaluation(mode='generate_prompts',  eval_type='goal_interpretation')
 ```
 2. To evaluate LLM outputs for `goal_interpretation`:
 ```
-python -m virtualhome_eval.agent_eval --mode evaluate_results --eval_type goal_interpretation > goal_eval_vh_eval.log 2>&1
+results = agent_evaluation(mode='evaluate_results', eval_type='goal_interpretation')
 ```
 3. To generate prompts for `action_sequence`:
 ```
-python -m virtualhome_eval.agent_eval --mode generate_prompts --eval_type action_sequence > action_eval_vh_prompt.log 2>&1
+agent_evaluation(mode='generate_prompts',  eval_type='action_sequence')
 ```
 4. To evaluate LLM outputs for `action_sequence`:
 ```
-python -m virtualhome_eval.agent_eval --mode evaluate_results --eval_type action_sequence > action_eval_vh_eval.log 2>&1
+results = agent_evaluation(mode='evaluate_results', eval_type='action_sequence')
 ```
-5. To generate Virtualhome prompts for `transition_modeling`:
+5. To generate Virtualhome prompts for `transition_model`:
 ```
-python -m virtualhome_eval.agent_eval --mode generate_prompts --eval_type transition_model --dataset virtualhome > transition_vh_prompt.log 2>&1
+agent_evaluation(mode='generate_prompts',  eval_type='transition_model')
 ```
-6. To evaluate LLM outputs on Virtualhome for `transition_modeling`:
+6. To evaluate LLM outputs on Virtualhome for `transition_model`:
 ```
-python -m virtualhome_eval.agent_eval --mode evaluate_results --eval_type transition_model > transition_bh_eval.log 2>&1
+results = agent_evaluation(mode='evaluate_results', eval_type='transition_model')
 ```
