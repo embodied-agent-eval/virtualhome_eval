@@ -107,7 +107,7 @@ def agent_evaluation(
         elif eval_type == "subgoal_decomposition":
             log_file = setup_logging(function_name="subgoal_decomposition_eval")
             logger = logging.getLogger(__name__)
-            all_results, _ = subgoal_output_evaluation(args)
+            all_results = subgoal_output_evaluation(args)
         print(f"All results saved to {output_dir}")
         return all_results
     else:

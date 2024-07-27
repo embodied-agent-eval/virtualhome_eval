@@ -33,7 +33,7 @@ def simulate_one_llm(llm_response_path, worker_num: int=5, result_dir: str='./re
 
     llm_responses = get_llm_outputs_dict(llm_response_path)
     llm_name = os.path.basename(llm_response_path).split('.')[0]
-    eval_stat_path = os.path.join(result_dir, 'error_analysis', f'{llm_name}.json')
+    eval_stat_path = os.path.join(result_dir, 'error_info.json')
     os.makedirs(os.path.dirname(eval_stat_path), exist_ok=True)
 
     task_list = [(get_scene_id_and_file_id(item['identifier']), item['llm_output']) for item in llm_responses]
@@ -77,10 +77,7 @@ def simulate_one_llm(llm_response_path, worker_num: int=5, result_dir: str='./re
 
 def evaluate_results(args):
     dataset = args.dataset
-    if args.llm_response_path == "":
-        llm_response_path = f"virtualhome_eval/llm_response/subgoal_decomposition/"
-    else:
-        llm_response_path = args.llm_response_path
+    llm_response_path = os.path.join(args.llm_response_path, 'subgoal_decomposition')
     model_names = extract_model_names(llm_response_path)
     all_results = {}
     for model_name in model_names:
@@ -90,6 +87,11 @@ def evaluate_results(args):
         data_dir = os.path.join(args.dataset_dir, "programs_processed_precond_nograb_morepreconds")
 
         os.makedirs(output_path, exist_ok=True)
-        summary = simulate_one_llm(llm_response_path, result_dir=output_path)
+        llm_response_json = os.path.join(llm_response_path, f'{model_name}_outputs.json')
+        summary = simulate_one_llm(llm_response_json, result_dir=output_path)
+        save_path = os.path.join(output_path, "summary.json")
+        with open(save_path, "w") as f:
+            json.dump(summary, f, indent=4)
+            logger.info(f"Evaluate results of {model_name} saved to {save_path}")
         all_results[model_name] = summary
-    return all_results, None
+    return all_results

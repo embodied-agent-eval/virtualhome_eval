@@ -53,3 +53,10 @@ agent_evaluation(mode='generate_prompts',  eval_type='transition_model')
 ```
 results = agent_evaluation(mode='evaluate_results', eval_type='transition_model')
 ```
+7. To generate prompts for `subgoal_decomposition`:
+```
+agent_evaluation(mode='generate_prompts',  eval_type='subgoal_decomposition')
+```
+8. To evaluate LLM outputs for `subgoal_decomposition`:
+```
+results = agent_evaluation(mode='evaluate_results', eval_type='subgoal_decomposition')

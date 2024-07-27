@@ -86,5 +86,6 @@ def generate_prompts(args):
                     'llm_prompt': prompt
                 }
             )
-            with open(helm_prompt_path, 'w') as f:
-                json.dump(helm_prompt_list, f, indent=4)
+    with open(helm_prompt_path, 'w') as f:
+        json.dump(helm_prompt_list, f, indent=4)
+    return helm_prompt_path
