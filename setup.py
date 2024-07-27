@@ -5,7 +5,7 @@ with open("README.md", "r", encoding="utf-8") as fh:
 
 setup(
     name="virtualhome_eval",
-    version="1.0.0",
+    version="1.0.3",
     author="stanford",
     description="Embodied agent interface evaluation for VirtualHome",
     long_description=long_description,
@@ -23,6 +23,7 @@ setup(
         "fire",
         "lark",
         "openai",
+        "ipdb",
         "networkx>=3.1",
         "numpy>=1.20.0",
     ],

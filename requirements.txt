@@ -4,3 +4,4 @@ openai
 numpy>=1.20.0
 fire
 lark
+ipdb
