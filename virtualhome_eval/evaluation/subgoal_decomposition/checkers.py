@@ -282,7 +282,7 @@ class SubgoalSemanticChecker(SubgoalBaseChecker):
         return self.error_dict
     
 class SubgoalRuntimeChecker(SubgoalBaseChecker):
-    def __init__(self, subgoal_plan: SubgoalPlan, vocab: Vocabulary, tl_expression: SimpleTLExpression, planner: MotionPlanner, goal_tl_expression: SimpleTLExpression) -> None:
+    def __init__(self, subgoal_plan: SubgoalPlan, vocab: Vocabulary, tl_expression: SimpleTLExpression, planner: MotionPlanner, goal_tl_expression: SimpleTLExpression, args) -> None:
         super().__init__(subgoal_plan, vocab)
         self.tl_expression = tl_expression
         self.planner = planner
@@ -292,6 +292,7 @@ class SubgoalRuntimeChecker(SubgoalBaseChecker):
         self.error_info = []
         self.executable = False
         self.goal_tl_expression = goal_tl_expression
+        self.args = args
         self.vh_goal = self.get_vh_goal()
         self.error_code_to_type = self.get_error_code_to_error_type_dict()
         self.run_result = self.run_checker()
@@ -494,7 +495,8 @@ class SubgoalRuntimeChecker(SubgoalBaseChecker):
         return new_failed_action_seqs
     
     def get_vh_goal(self):
-        ltl_formula_accurate_base_root = 'virtualhome_eval/resources/task_state_LTL_formula_accurate.json'
+        resource_dir = self.args.resource_dir
+        ltl_formula_accurate_base_root = os.path.join(resource_dir, 'task_state_LTL_formula_accurate.json')
         with open(ltl_formula_accurate_base_root, 'r') as f:
             task_obj = json.load(f)
         scene_str = f'scene_{self.scene_id}'
@@ -611,8 +613,9 @@ def load_graph_state(state_file_path):
     init_state, final_state = state['init_graph'], state['final_graph']
     return init_state, final_state
 
-def load_motion_planner(scene_id: int, file_id:str) -> MotionPlanner:
-    state_root_path = f'virtualhome_eval/dataset/programs_processed_precond_nograb_morepreconds/init_and_final_graphs/TrimmedTestScene{scene_id}_graph/results_intentions_march-13-18'
+def load_motion_planner(scene_id: int, file_id:str, args) -> MotionPlanner:
+    dataset_dir = args.dataset_dir
+    state_root_path =  os.path.join(dataset_dir, f'programs_processed_precond_nograb_morepreconds/init_and_final_graphs/TrimmedTestScene{scene_id}_graph/results_intentions_march-13-18')
     state_file_path = os.path.join(state_root_path, f'file{file_id}.json')
     init_state, final_state = load_graph_state(state_file_path)
     init_graph = EnvironmentGraph(init_state)
@@ -631,8 +634,9 @@ def load_motion_planner(scene_id: int, file_id:str) -> MotionPlanner:
 #     file_id = identifier[8:]
 #     return SubgoalPlanHalfJson(scene_id, file_id, llm_output)
 
-def get_final_tl_goal(scene_id, file_id):
-    final_goal_file_path = 'virtualhome_eval/resources/task_state_LTL_formula_accurate.json'
+def get_final_tl_goal(scene_id, file_id, args):
+    resource_dir = args.resource_dir
+    final_goal_file_path = os.path.join(resource_dir, 'task_state_LTL_formula_accurate.json')
     scene_str = f'scene_{scene_id}'
     with open(final_goal_file_path, 'r') as f:
         final_goal_dict = json.load(f)

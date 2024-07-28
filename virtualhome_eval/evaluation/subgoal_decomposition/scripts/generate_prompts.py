@@ -9,6 +9,7 @@ from virtualhome_eval.evaluation.subgoal_decomposition.subgoal_prompts_utils imp
 
 def generate_prompts(args):
     dataset = args.dataset
+    evaluation_dir = args.evaluation_dir
     assert dataset == 'virtualhome', 'Subgoal decomposition is only supported for VirtualHome dataset'
     resource_root = osp.join(args.resource_dir, dataset)
     data_dir = osp.join(args.dataset_dir, "programs_processed_precond_nograb_morepreconds")
@@ -18,9 +19,9 @@ def generate_prompts(args):
     task_dict = json.load(open(task_dict_dir, "r"))
     task_dict = task_dict[scene_id]
 
-    meta_prompt_file_path = os.path.join('./virtualhome_eval/evaluation/subgoal_decomposition', 'prompts', 'meta_prompt.json')
+    meta_prompt_file_path = os.path.join(evaluation_dir, 'subgoal_decomposition', 'prompts', 'meta_prompt.json')
     generate_meta_prompt(meta_prompt_file_path)
-    system_setup_file_path = os.path.join('./virtualhome_eval/evaluation/subgoal_decomposition', 'prompts', 'system_setup.json')
+    system_setup_file_path = os.path.join(evaluation_dir, 'subgoal_decomposition', 'prompts', 'system_setup.json')
     generate_system_setup(system_setup_file_path)
 
     # load meta for constructing planners
@@ -28,7 +29,7 @@ def generate_prompts(args):
     object_placing = utils.load_object_placing()
     name_equivalence = utils.load_name_equivalence()
 
-    helm_prompt_path = os.path.join('./virtualhome_eval/evaluation/subgoal_decomposition', 'prompts', 'helm_prompts.json')
+    helm_prompt_path = os.path.join(evaluation_dir, 'subgoal_decomposition', 'prompts', 'helm_prompts.json')
     helm_prompt_list = json.load(open(helm_prompt_path, "r")) if osp.exists(helm_prompt_path) else None
     helm_prompt_list = [] if helm_prompt_list is None else helm_prompt_list
     for task_name, task_detail in task_dict.items():

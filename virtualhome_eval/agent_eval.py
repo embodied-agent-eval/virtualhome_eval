@@ -27,14 +27,21 @@ from virtualhome_eval.evaluation.subgoal_decomposition.scripts.evaluate_results 
     evaluate_results as subgoal_output_evaluation,
 )
 
+package_path = os.path.dirname(os.path.abspath(__file__))
+default_resource_dir = os.path.join(package_path, "resources")
+default_llm_response_path = os.path.join(package_path, "llm_response")
+default_dataset_dir = os.path.join(package_path, "dataset")
+default_evaluation_dir = os.path.join(package_path, "evaluation")
+
 def agent_evaluation(
     mode="generate_prompts",
     eval_type="goal_interpretation",
-    resource_dir="virtualhome_eval/resources/",
-    llm_response_path="virtualhome_eval/llm_response/",
-    dataset_dir="virtualhome_eval/dataset/",
+    resource_dir=default_resource_dir,
+    llm_response_path=default_llm_response_path,
+    dataset_dir=default_dataset_dir,
+    evaluation_dir=default_evaluation_dir,
+    output_dir="output/",
     dataset="virtualhome",
-    output_dir="virtualhome_eval/output/",
     scene_id=1,
 ):
     """
@@ -71,6 +78,7 @@ def agent_evaluation(
     args.dataset = dataset
     args.output_dir = output_dir
     args.scene_id = scene_id
+    args.evaluation_dir = evaluation_dir
 
     if mode == "generate_prompts":
         if eval_type == "action_sequence":

@@ -16,8 +16,9 @@ def generate_prompts(args):
         args.dataset_dir, "programs_processed_precond_nograb_morepreconds"
     )
     task_dict_dir = osp.join(resource_root, "task_state_LTL_formula_accurate.json")
-    helm_prompt_path = (
-        "virtualhome_eval/evaluation/goal_interpretation/prompts/helm_prompts.json"
+    evaluation_dir = args.evaluation_dir
+    helm_prompt_path = osp.join(
+        evaluation_dir, "goal_interpretation/prompts/helm_prompts.json"
     )
     rel_obj_path = os.path.join(resource_root, "relation_object_pairs.json")
     all_rel_path = os.path.join(resource_root, "relation_types.json")

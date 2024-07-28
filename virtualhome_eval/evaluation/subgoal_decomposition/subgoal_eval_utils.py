@@ -292,8 +292,9 @@ def traj_eval_stats(eval_stat_path):
     }
     return traj_stats
 
-def get_all_scene_goal_stats():
-    task_dict_path = 'virtualhome_eval/resources/task_state_LTL_formula_accurate.json'
+def get_all_scene_goal_stats(args):
+    resource_dir = args.resource_dir
+    task_dict_path = os.path.join(resource_dir, "task_state_LTL_formula_accurate.json")
     task_dict = json.load(open(task_dict_path, 'r'))
     scene_str = 'scene_1'
     task_dict = task_dict[scene_str]
@@ -322,7 +323,7 @@ def get_all_scene_goal_stats():
             #     print(stat_dict[identifier])
     return stat_dict
 
-def goal_eval_stats(eval_stat_path):
+def goal_eval_stats(eval_stat_path, args):
     model_name = os.path.basename(eval_stat_path).split("_")[0]
     with open(eval_stat_path, "r") as f:
         stats = json.load(f)
@@ -336,7 +337,7 @@ def goal_eval_stats(eval_stat_path):
     full_tot_num = 0
     full_success_num = 0
 
-    tot_stat_dict = get_all_scene_goal_stats()
+    tot_stat_dict = get_all_scene_goal_stats(args)
 
     for id, info in stats.items():
         success = info['success']

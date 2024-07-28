@@ -47,12 +47,13 @@ class EvalStatistics:
 
 
 class EvalSubgoalPlan:
-    def __init__(self, vocab_path, scene_id, file_id, llm_output) -> None:
+    def __init__(self, vocab_path, scene_id, file_id, llm_output, args) -> None:
         self.vocab_path = vocab_path
         self.scene_id = scene_id
         self.file_id = file_id
+        self.args = args
         self.subgoal_plan = SubgoalPlanHalfJson(scene_id, file_id, llm_output)
-        self.planner = load_motion_planner(scene_id, file_id)
+        self.planner = load_motion_planner(scene_id, file_id, args)
         self.vocab = Vocabulary(vocab_path, self.planner.id_to_name)
     
     def evaluate_subgoal_plan(self):
@@ -77,11 +78,11 @@ class EvalSubgoalPlan:
             semantic_report = semantic_checker.report()
             error_tuple = ('Hallucination', semantic_report, None)
             return error_tuple
-        goal_tl_formula = get_final_tl_goal(self.scene_id, self.file_id)
+        goal_tl_formula = get_final_tl_goal(self.scene_id, self.file_id, self.args)
         if not goal_tl_formula:
             assert False, 'Failed to get final goal formula'
         goal_tl_expression = parse_simple_tl(goal_tl_formula, self.vocab.get_tl_predicates(), self.vocab.get_subgoal_actions_in_list())
-        runtime_checker = SubgoalRuntimeChecker(self.subgoal_plan, self.vocab, tl_expression, self.planner, goal_tl_expression)
+        runtime_checker = SubgoalRuntimeChecker(self.subgoal_plan, self.vocab, tl_expression, self.planner, goal_tl_expression, self.args)
         runtime_report = runtime_checker.report()
         runtime_rst = runtime_checker.run_result
         node_tot_num = runtime_checker.goal_info[0]
@@ -108,9 +109,9 @@ class EvalSubgoalPlan:
             return error_tuple
         return ('Correct', runtime_checker.executable, runtime_checker.feasible_action_seqs, runtime_report, tmp)
 
-def evaluate_task(vocab_path, scene_id, file_id, llm_output):
+def evaluate_task(vocab_path, scene_id, file_id, llm_output, args):
     try:
-        eval_subgoal_plan = EvalSubgoalPlan(vocab_path, scene_id, file_id, llm_output)
+        eval_subgoal_plan = EvalSubgoalPlan(vocab_path, scene_id, file_id, llm_output, args)
         report = eval_subgoal_plan.evaluate_subgoal_plan()
     except Exception as e:
         report = ('NotParseable', str(e), None)
