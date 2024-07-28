@@ -26,7 +26,7 @@ agent_evaluation(mode=[generate_prompts, evaluate_results], eval_type=[goal_inte
 - `dataset`: The dataset type. Options:
   - `virtualhome`
   - `behavior`
-- `output_dir`: The directory to store the output results. By default, it is at `virtualhome_eval/output/`
+- `output_dir`: The directory to store the output results. By default, it is at `output/` of current path.
 
 ### Example usage
 1. To generate prompts for `goal_interpretation`:

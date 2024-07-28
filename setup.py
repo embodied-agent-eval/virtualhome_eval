@@ -5,7 +5,7 @@ with open("README.md", "r", encoding="utf-8") as fh:
 
 setup(
     name="virtualhome_eval",
-    version="1.0.3",
+    version="0.1.0",
     author="stanford",
     description="Embodied agent interface evaluation for VirtualHome",
     long_description=long_description,
@@ -29,7 +29,7 @@ setup(
     ],
     include_package_data=True,
     package_data={
-        "": ["*.json", "*.xml", "*.md", "*.yaml"],
+        "": ["*.json", "*.xml", "*.md", "*.yaml", "*.txt", "*.pddl"],
     },
 )
 
